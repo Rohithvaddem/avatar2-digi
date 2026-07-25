@@ -452,12 +452,11 @@ body {
     color: var(--text-primary);
 }
 
-/* Map Viewport Area */
 .map-viewport {
     flex: 1;
     overflow: hidden;
     position: relative;
-    background-color: #05060d;
+    background-color: #ffffff;
     cursor: grab;
     display: flex;
     align-items: center;
@@ -496,8 +495,8 @@ body {
     height: 646px;
     transform-origin: 0 0;
     user-select: none;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-    background-color: #0b0c10;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
 }
 
 .map-image {
