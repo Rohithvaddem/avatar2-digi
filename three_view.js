@@ -167,7 +167,7 @@ function initThreeScene() {
     if (window.location.protocol !== 'file:') {
         textureLoader.setCrossOrigin('anonymous');
     }
-    textureLoader.load('map_layout.jpg?v=' + Date.now(), (texture) => {
+    textureLoader.load('map_layout.jpg', (texture) => {
         texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
         texture.minFilter = THREE.LinearFilter;
         texture.magFilter = THREE.LinearFilter;
