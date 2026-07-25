@@ -76,6 +76,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setupMobileSidebar();
     setupMapper();
     setupAdmin();
+    setupRouting();
 });
 
 // Ensure map is fitted once all resources are loaded and on resize
@@ -178,6 +179,15 @@ function renderPlotDots() {
         dot.addEventListener('click', (e) => {
             e.stopPropagation();
             if (isMapperMode) return; // Disallow in mapper mode
+            
+            // Intercept for routing starting point
+            if (window.isRoutingModeActive) {
+                if (typeof setRoutingSource === 'function') {
+                    setRoutingSource(plotNo);
+                }
+                return;
+            }
+            
             openPlotModal(plotNo);
         });
         
@@ -1083,4 +1093,215 @@ function savePlotEdits(plotNo) {
     renderPlotDots();
     updateStatistics();
     openPlotModal(plotNo);
+}
+
+// ----------------------------------------------------
+// Interactive Nearby Routing System
+// ----------------------------------------------------
+window.isRoutingModeActive = false;
+let selectedRouteSourcePlot = null;
+
+function setupRouting() {
+    const toggleRouteBtn = document.getElementById('toggleRouteBtn');
+    const closeRoutingPanelBtn = document.getElementById('closeRoutingPanelBtn');
+    const clearRouteBtn = document.getElementById('clearRouteBtn');
+    const calculateRouteBtn = document.getElementById('calculateRouteBtn');
+    const routingPanel = document.getElementById('routingPanel');
+    const routeSourcePlot = document.getElementById('routeSourcePlot');
+    const routeDestination = document.getElementById('routeDestination');
+    const routingMetrics = document.getElementById('routingMetrics');
+
+    if (!toggleRouteBtn || !routingPanel) return;
+
+    // Toggle panel visibility
+    toggleRouteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        window.isRoutingModeActive = !window.isRoutingModeActive;
+        
+        if (window.isRoutingModeActive) {
+            toggleRouteBtn.classList.add('active');
+            routingPanel.style.display = 'block';
+            
+            // Close other panels if open
+            if (plotModal) plotModal.classList.remove('open');
+            if (modalBackdrop) modalBackdrop.classList.remove('open');
+            
+            // Highlight hint
+            if (mapTip) {
+                mapTip.innerHTML = '<i class="fa-solid fa-route"></i> Routing Mode Active: Click any plot on the layout map to set starting point!';
+            }
+        } else {
+            deactivateRouting();
+        }
+    });
+
+    // Close panel button
+    closeRoutingPanelBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deactivateRouting();
+    });
+
+    // Clear route button
+    clearRouteBtn.addEventListener('click', () => {
+        clearRoutingPath();
+        routeSourcePlot.value = '';
+        selectedRouteSourcePlot = null;
+        routingMetrics.style.display = 'none';
+    });
+
+    // Calculate/Show Route button
+    calculateRouteBtn.addEventListener('click', () => {
+        if (!selectedRouteSourcePlot) {
+            alert('Please select a starting plot first by clicking on the layout map!');
+            return;
+        }
+        drawRoutingPath(selectedRouteSourcePlot);
+    });
+
+    // Destination dropdown change listener to auto-update active route metrics
+    routeDestination.addEventListener('change', () => {
+        if (selectedRouteSourcePlot) {
+            drawRoutingPath(selectedRouteSourcePlot);
+        }
+    });
+}
+
+function deactivateRouting() {
+    const toggleRouteBtn = document.getElementById('toggleRouteBtn');
+    const routingPanel = document.getElementById('routingPanel');
+    
+    window.isRoutingModeActive = false;
+    if (toggleRouteBtn) toggleRouteBtn.classList.remove('active');
+    if (routingPanel) routingPanel.style.display = 'none';
+    clearRoutingPath();
+    
+    if (mapTip) {
+        mapTip.innerHTML = '<i class="fa-solid fa-hand-pointer"></i> Drag to Pan &bull; Scroll or Pinch to Zoom';
+    }
+}
+
+// Set selected plot starting point from layout clicks
+function setRoutingSource(plotNo) {
+    selectedRouteSourcePlot = plotNo;
+    const routeSourcePlot = document.getElementById('routeSourcePlot');
+    if (routeSourcePlot) {
+        routeSourcePlot.value = `Plot ${plotNo}`;
+    }
+    
+    // Automatically trace route when clicked for snappy UI!
+    drawRoutingPath(plotNo);
+}
+
+// Clear drawn paths from SVG
+function clearRoutingPath() {
+    const svg = document.getElementById('routeSvgOverlay');
+    if (svg) svg.innerHTML = '';
+}
+
+// Compute road path nodes and render SVG polyline
+function drawRoutingPath(plotNo) {
+    clearRoutingPath();
+    
+    const coords = plotCoordinates[plotNo];
+    if (!coords) return;
+
+    const px = coords.left;
+    const py = coords.top;
+    
+    // Road Network Junction Coordinates:
+    // Layout Width = 1024, Height = 646.
+    // Entrance arrow is at bottom-left corner at x = 110, y = 500.
+    // The vertical road axis runs around x = 570.
+    // The horizontal corridors are:
+    //   - Bottom road: y = 495
+    //   - Middle road: y = 395
+    //   - Top road: y = 286
+    
+    // 1. Identify nearest horizontal road y coordinate
+    let roadY = 495;
+    if (py > 440) {
+        roadY = 495;
+    } else if (py > 340 && py <= 440) {
+        roadY = 395;
+    } else {
+        roadY = 286;
+    }
+
+    const pathPoints = [];
+    
+    // Start at plot center
+    pathPoints.push({ x: px, y: py });
+    
+    // Step 1: Connect plot center down/up to closest horizontal street corridor
+    pathPoints.push({ x: px, y: roadY });
+
+    // Step 2: Route horizontally to vertical central street junction (x = 570)
+    // Avoid double path nodes if already at vertical axis
+    if (Math.abs(px - 570) > 10) {
+        pathPoints.push({ x: 570, y: roadY });
+    }
+    
+    // Step 3: Route down vertical street to bottom road junction (570, 495)
+    if (roadY < 495) {
+        pathPoints.push({ x: 570, y: 495 });
+    }
+    
+    // Step 4: Route west along bottom road corridor towards entrance (110, 495)
+    pathPoints.push({ x: 110, y: 495 });
+    
+    // Step 5: Exit south through entrance arch corridor (110, 540)
+    pathPoints.push({ x: 110, y: 540 });
+    
+    // Step 6: Extend line to the left towards destination indicator (55, 560)
+    pathPoints.push({ x: 55, y: 560 });
+
+    // Render path elements in SVG
+    const svg = document.getElementById('routeSvgOverlay');
+    if (!svg) return;
+
+    // Convert points array to SVG path string
+    const pathString = pathPoints.map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+
+    // 1. Glow shadow underlay line
+    const pathUnderlay = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    pathUnderlay.setAttribute('d', pathString);
+    pathUnderlay.setAttribute('class', 'route-path-underlay');
+    
+    // 2. Active pulsing dash overlay line
+    const pathMain = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    pathMain.setAttribute('d', pathString);
+    pathMain.setAttribute('class', 'route-path-main');
+
+    // 3. Start Pin Marker Dot
+    const startPin = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    startPin.setAttribute('cx', px);
+    startPin.setAttribute('cy', py);
+    startPin.setAttribute('r', 5);
+    startPin.setAttribute('fill', '#ffffff');
+    startPin.setAttribute('stroke', '#d97706');
+    startPin.setAttribute('stroke-width', 2);
+
+    // 4. End Destination Pulsing Marker Dot
+    const endPin = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    endPin.setAttribute('cx', 55);
+    endPin.setAttribute('cy', 560);
+    endPin.setAttribute('r', 6);
+    endPin.setAttribute('class', 'route-pulse-dot');
+
+    // Append to SVG
+    svg.appendChild(pathUnderlay);
+    svg.appendChild(pathMain);
+    svg.appendChild(startPin);
+    svg.appendChild(endPin);
+
+    // Update floating panel metrics from select tag datasets
+    const destSelect = document.getElementById('routeDestination');
+    const selectedOpt = destSelect.options[destSelect.selectedIndex];
+    
+    const distVal = selectedOpt.getAttribute('data-dist') || '-';
+    const timeVal = selectedOpt.getAttribute('data-time') || '-';
+
+    document.getElementById('routeMetricDistance').textContent = distVal;
+    document.getElementById('routeMetricTime').textContent = timeVal;
+    document.getElementById('routingMetrics').style.display = 'flex';
 }

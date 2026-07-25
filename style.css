@@ -921,5 +921,232 @@ body {
     }
 }
 
+/* --- Routing Panel Styles --- */
+.routing-panel {
+    position: absolute;
+    bottom: 24px;
+    left: 24px;
+    width: 320px;
+    background: rgba(12, 17, 37, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 16px;
+    z-index: 100;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-primary);
+    display: none; /* Controlled by toggle JS */
+}
+
+.routing-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.routing-panel-header span i {
+    color: var(--accent);
+    margin-right: 6px;
+}
+
+.close-routing-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 16px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.close-routing-btn:hover {
+    color: #ef4444;
+}
+
+.routing-input-group {
+    margin-bottom: 12px;
+}
+
+.routing-input-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.routing-input-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+#routeSourcePlot {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #fff;
+    font-size: 14px;
+    outline: none;
+    cursor: default;
+}
+
+.routing-hint {
+    font-size: 11px;
+    color: var(--accent);
+    margin-top: 4px;
+    font-style: italic;
+}
+
+#routeDestination {
+    width: 100%;
+    background: rgba(20, 27, 56, 0.9);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #fff;
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+}
+
+.routing-metrics {
+    display: flex;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-top: 14px;
+    margin-bottom: 14px;
+}
+
+.metric-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.metric-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+}
+
+.metric-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-top: 2px;
+}
+
+.routing-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.routing-btn {
+    flex: 1;
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.routing-btn.btn-primary {
+    background-color: var(--accent);
+    color: #fff;
+}
+
+.routing-btn.btn-primary:hover {
+    background-color: #f59e0b;
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+}
+
+.routing-btn.btn-secondary {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.routing-btn.btn-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* --- SVG Route Path Styles & Animation --- */
+.route-path-underlay {
+    fill: none;
+    stroke: rgba(217, 119, 6, 0.2);
+    stroke-width: 8px;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.route-path-main {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 4px;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 8 8;
+    animation: route-dash 30s linear infinite;
+}
+
+.route-pulse-dot {
+    fill: #fff;
+    stroke: var(--accent);
+    stroke-width: 2px;
+    animation: route-pulse 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes route-dash {
+    to {
+        stroke-dashoffset: -1000;
+    }
+}
+
+@keyframes route-pulse {
+    from {
+        transform: scale(0.9) translate(-50%, -50%);
+        opacity: 0.8;
+    }
+    to {
+        transform: scale(1.2) translate(-50%, -50%);
+        opacity: 1;
+        filter: drop-shadow(0 0 8px var(--accent));
+    }
+}
+
+#toggleRouteBtn.active {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 15px var(--accent-glow);
+}
+
+/* Responsive adjustment for Mobile screens */
+@media (max-width: 768px) {
+    .routing-panel {
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - 32px);
+        max-width: 360px;
+    }
+}
+
 
 
