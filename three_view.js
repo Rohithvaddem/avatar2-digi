@@ -164,8 +164,12 @@ function initThreeScene() {
     const textureLoader = new THREE.TextureLoader();
     textureLoader.load('map_layout.jpg', (texture) => {
         texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-        groundMat.map = texture;
-        groundMat.needsUpdate = true;
+        ground.material = new THREE.MeshStandardMaterial({
+            map: texture,
+            roughness: 0.9,
+            metalness: 0.05,
+            side: THREE.DoubleSide
+        });
     }, undefined, (err) => {
         console.error("Error loading map texture asynchronously:", err);
     });
