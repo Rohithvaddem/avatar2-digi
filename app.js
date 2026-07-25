@@ -79,7 +79,20 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // Ensure map is fitted once all resources are loaded and on resize
-window.addEventListener('load', fitMapToViewport);
+window.addEventListener('load', () => {
+    fitMapToViewport();
+    
+    // Smooth transition to hide the loader screen
+    setTimeout(() => {
+        const loader = document.getElementById('loadingScreen');
+        if (loader) {
+            loader.classList.add('fade-out');
+            setTimeout(() => {
+                loader.remove();
+            }, 600); // Remove element after opacity transition completes
+        }
+    }, 500); // Keep loader visible briefly for smooth transition
+});
 window.addEventListener('resize', fitMapToViewport);
 
 // Initialization
