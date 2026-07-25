@@ -1,6 +1,6 @@
 /*
    ====================================================
-   Avatar 2 Digital Layout - CesiumJS WebGIS Controller
+   Avatar 2 Digital Layout - 3D Vector Masterplan (CesiumJS)
    ====================================================
 */
 
@@ -9,11 +9,16 @@ let isCesiumActive = false;
 
 // Project Site GIS Bounds (Exact Aspirealty Avatar 2 location: 16.92328 N, 78.53235 E)
 const siteBounds = {
-    west: 78.53110,
-    south: 16.92248,
-    east: 78.53360,
-    north: 16.92408
+    west: 78.53050,
+    south: 16.92180,
+    east: 78.53420,
+    north: 16.92470
 };
+
+// Suppress Cesium error popup panel globally
+if (typeof Cesium !== 'undefined') {
+    Cesium.showErrorPanel = function () {};
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     setupCesiumControls();
@@ -63,11 +68,6 @@ function setupCesiumControls() {
     });
 }
 
-// Disable Cesium red alert error panel popup globally
-if (typeof Cesium !== 'undefined') {
-    Cesium.showErrorPanel = function () {};
-}
-
 function initCesiumViewer() {
     if (typeof Cesium === 'undefined') {
         console.error('CesiumJS library not loaded.');
@@ -98,12 +98,12 @@ function initCesiumViewer() {
         infoBox: false
     });
 
-    // Fly camera to project location
+    // Camera fly to location
     const centerLng = (siteBounds.west + siteBounds.east) / 2;
     const centerLat = (siteBounds.south + siteBounds.north) / 2;
 
     viewer.camera.flyTo({
-        destination: Cesium.Cartesian3.fromDegrees(centerLng, centerLat - 0.0015, 350),
+        destination: Cesium.Cartesian3.fromDegrees(centerLng, centerLat - 0.0018, 380),
         orientation: {
             heading: Cesium.Math.toRadians(0),
             pitch: Cesium.Math.toRadians(-45),
@@ -111,41 +111,16 @@ function initCesiumViewer() {
         }
     });
 
-    // Suppress Cesium alert popup modal on WebGL rendering glitches
+    // Suppress render errors
     viewer.scene.renderError.addEventListener((scene, error) => {
         console.warn('Cesium render event suppressed:', error);
     });
 
-    // Add Ground Layout Overlay Image using Blob URL (prevents WebGL texImage2D SecurityError)
-    const rectangle = Cesium.Rectangle.fromDegrees(
-        siteBounds.west,
-        siteBounds.south,
-        siteBounds.east,
-        siteBounds.north
-    );
-
-    fetch('map_layout.jpg')
-        .then(res => res.blob())
-        .then(blob => {
-            const objectUrl = URL.createObjectURL(blob);
-            viewer.entities.add({
-                name: "Avatar 2 Project Layout Drawing",
-                rectangle: {
-                    coordinates: rectangle,
-                    material: new Cesium.ImageMaterialProperty({
-                        image: objectUrl,
-                        transparent: true,
-                        alpha: 0.85
-                    })
-                }
-            });
-        })
-        .catch((err) => {
-            console.warn('Map layout image fetch skipped:', err);
-        });
-
-    // Add Plot Entities
-    generateCesiumPlots();
+    // Build 3D Vector Layout Masterplan Components
+    buildGreenPerimeterField();
+    buildRoadNetwork();
+    generateVectorPlots();
+    buildCurbTrees();
 
     // Click Selector Handler
     const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
@@ -160,16 +135,121 @@ function initCesiumViewer() {
     }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 }
 
-function getCesiumStatusColor(status) {
-    const s = String(status).toUpperCase().trim();
-    if (s === 'AVAILABLE') return Cesium.Color.fromCssColorString('#10b981');
-    if (s === 'SOLD' || s === 'BOOKED' || s === 'CLUB HOUSE') return Cesium.Color.fromCssColorString('#ef4444');
-    if (s === 'HOLD') return Cesium.Color.fromCssColorString('#eab308');
-    if (s === 'MORTGAGE') return Cesium.Color.fromCssColorString('#f97316');
-    return Cesium.Color.fromCssColorString('#6b7280');
+// ----------------------------------------------------
+// 1. Green Perimeter Landscape Polygon
+// ----------------------------------------------------
+
+function buildGreenPerimeterField() {
+    const fieldRectangle = Cesium.Rectangle.fromDegrees(
+        siteBounds.west - 0.0003,
+        siteBounds.south - 0.0003,
+        siteBounds.east + 0.0003,
+        siteBounds.north + 0.0003
+    );
+
+    viewer.entities.add({
+        name: "Layout Landscape Perimeter",
+        rectangle: {
+            coordinates: fieldRectangle,
+            material: Cesium.Color.fromCssColorString('#2d5a27').withAlpha(0.92),
+            height: 0
+        }
+    });
 }
 
-function generateCesiumPlots() {
+// ----------------------------------------------------
+// 2. Asphalt Road Network with Street Width Text
+// ----------------------------------------------------
+
+function buildRoadNetwork() {
+    const centerLng = (siteBounds.west + siteBounds.east) / 2;
+    const centerLat = (siteBounds.south + siteBounds.north) / 2;
+
+    // Main East-West Road Corridors
+    const road1 = Cesium.Rectangle.fromDegrees(
+        siteBounds.west,
+        centerLat - 0.00015,
+        siteBounds.east,
+        centerLat + 0.00015
+    );
+
+    const road2 = Cesium.Rectangle.fromDegrees(
+        siteBounds.west,
+        centerLat + 0.0008,
+        siteBounds.east,
+        centerLat + 0.0011
+    );
+
+    const road3 = Cesium.Rectangle.fromDegrees(
+        siteBounds.west,
+        centerLat - 0.0009,
+        siteBounds.east,
+        centerLat - 0.0006
+    );
+
+    // North-South Connecting Road Corridors
+    const roadNS = Cesium.Rectangle.fromDegrees(
+        centerLng + 0.0001,
+        siteBounds.south,
+        centerLng + 0.0003,
+        siteBounds.north
+    );
+
+    const roadColor = Cesium.Color.fromCssColorString('#1f2937'); // Asphalt dark grey
+
+    [road1, road2, road3, roadNS].forEach((roadRect, idx) => {
+        viewer.entities.add({
+            name: `Road Segment ${idx + 1}`,
+            rectangle: {
+                coordinates: roadRect,
+                material: roadColor,
+                height: 1
+            }
+        });
+    });
+
+    // Add Street Width Text Labels along Roads
+    viewer.entities.add({
+        name: "Main Road Width Label 1",
+        position: Cesium.Cartesian3.fromDegrees(centerLng - 0.0008, centerLat, 2),
+        label: {
+            text: "9 M WIDE ROAD",
+            font: "bold 11px sans-serif",
+            fillColor: Cesium.Color.WHITE,
+            outlineColor: Cesium.Color.BLACK,
+            outlineWidth: 2,
+            style: Cesium.LabelStyle.FILL_AND_OUTLINE
+        }
+    });
+
+    viewer.entities.add({
+        name: "Main Road Width Label 2",
+        position: Cesium.Cartesian3.fromDegrees(centerLng + 0.0008, centerLat, 2),
+        label: {
+            text: "9 M WIDE ROAD",
+            font: "bold 11px sans-serif",
+            fillColor: Cesium.Color.WHITE,
+            outlineColor: Cesium.Color.BLACK,
+            outlineWidth: 2,
+            style: Cesium.LabelStyle.FILL_AND_OUTLINE
+        }
+    });
+}
+
+// ----------------------------------------------------
+// 3. Color-Coded 3D Vector Plot Blocks & Ground Labels
+// ----------------------------------------------------
+
+function getVectorPlotColor(status) {
+    const s = String(status).toUpperCase().trim();
+    if (s === 'AVAILABLE') return { color: '#fffbe6', text: '#111827' }; // Cream Available
+    if (s === 'SOLD' || s === 'BOOKED' || s === 'CLUB HOUSE') return { color: '#f59e0b', text: '#ffffff' }; // Gold Sold/Booked
+    if (s === 'HOLD') return { color: '#eab308', text: '#111827' }; // Gold Hold
+    if (s === 'MORTGAGE') return { color: '#f97316', text: '#ffffff' }; // Orange Mortgage
+    return { color: '#fffbe6', text: '#111827' };
+}
+
+function generateVectorPlots() {
     if (typeof plotCoordinates === 'undefined' || typeof plotData === 'undefined') return;
 
     Object.keys(plotCoordinates).forEach(plotNo => {
@@ -181,30 +261,73 @@ function generateCesiumPlots() {
 
         const plotDetail = plotData.find(p => String(p.plot_no) === String(plotNo));
         const status = plotDetail ? plotDetail.plot_status : 'AVAILABLE';
-        const color = getCesiumStatusColor(status);
+        const colorConfig = getVectorPlotColor(status);
 
-        // Add extruded 3D Box Entity for the Plot
+        // Vector rectangle bounds for each plot block
+        const pWest = lng - 0.000085;
+        const pEast = lng + 0.000085;
+        const pSouth = lat - 0.000055;
+        const pNorth = lat + 0.000055;
+
+        const plotRectangle = Cesium.Rectangle.fromDegrees(pWest, pSouth, pEast, pNorth);
+
+        // Create 3D Vector Tile Entity for Plot
         const entity = viewer.entities.add({
             name: `Plot ${plotNo}`,
-            position: Cesium.Cartesian3.fromDegrees(lng, lat, 4),
-            box: {
-                dimensions: new Cesium.Cartesian3(22.0, 22.0, 8.0),
-                material: color.withAlpha(0.75),
+            rectangle: {
+                coordinates: plotRectangle,
+                material: Cesium.Color.fromCssColorString(colorConfig.color).withAlpha(0.95),
                 outline: true,
-                outlineColor: Cesium.Color.WHITE
+                outlineColor: Cesium.Color.fromCssColorString('#374151'),
+                height: 2,
+                extrudedHeight: 3.5
             },
             label: {
                 text: `${plotNo}`,
-                font: 'bold 12px sans-serif',
-                fillColor: Cesium.Color.WHITE,
-                outlineColor: Cesium.Color.BLACK,
-                outlineWidth: 3,
+                font: 'bold 11px sans-serif',
+                fillColor: Cesium.Color.fromCssColorString(colorConfig.text),
+                outlineColor: colorConfig.text === '#ffffff' ? Cesium.Color.BLACK : Cesium.Color.TRANSPARENT,
+                outlineWidth: 1.5,
                 style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-                pixelOffset: new Cesium.Cartesian2(0, -18),
                 heightReference: Cesium.HeightReference.RELATIVE_TO_GROUND
             }
         });
 
         entity.plotNo = plotNo;
+    });
+}
+
+// ----------------------------------------------------
+// 4. Curb Trees along Road Borders
+// ----------------------------------------------------
+
+function buildCurbTrees() {
+    const centerLng = (siteBounds.west + siteBounds.east) / 2;
+    const centerLat = (siteBounds.south + siteBounds.north) / 2;
+
+    for (let x = siteBounds.west; x <= siteBounds.east; x += 0.00025) {
+        // Upper road trees
+        spawnCurbTree(x, centerLat + 0.00115);
+        spawnCurbTree(x, centerLat + 0.00075);
+
+        // Central road trees
+        spawnCurbTree(x, centerLat + 0.00018);
+        spawnCurbTree(x, centerLat - 0.00018);
+
+        // Lower road trees
+        spawnCurbTree(x, centerLat - 0.00055);
+        spawnCurbTree(x, centerLat - 0.00095);
+    }
+}
+
+function spawnCurbTree(lng, lat) {
+    viewer.entities.add({
+        position: Cesium.Cartesian3.fromDegrees(lng, lat, 2),
+        cylinder: {
+            length: 4.5,
+            topRadius: 0.1,
+            bottomRadius: 1.8,
+            material: Cesium.Color.fromCssColorString('#15803d') // Lush green tree canopy
+        }
     });
 }
