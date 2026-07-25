@@ -137,10 +137,16 @@ function initThreeScene() {
     fillLight.position.set(-30, 20, -30);
     scene.add(fillLight);
 
-    // 6. Textured Ground Plane (using map_layout.jpg)
+    // 6. Textured Ground Plane (using mapImage from DOM to bypass CORS and local file:// restrictions)
+    const mapImage = document.getElementById('mapImage');
+    const texture = new THREE.Texture(mapImage);
+    texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    texture.flipY = true;
+    texture.needsUpdate = true; // Signals Three.js to upload DOM pixels to GPU immediately
+
     const groundGeo = new THREE.PlaneGeometry(102.4, 64.6);
     const groundMat = new THREE.MeshStandardMaterial({
-        color: 0xffffff,
+        map: texture,
         roughness: 0.9,
         metalness: 0.05,
         side: THREE.DoubleSide
@@ -159,21 +165,6 @@ function initThreeScene() {
 
     // Start rendering loop immediately so the scene loads instantly!
     startRendering();
-
-    // Load texture asynchronously and apply it once loaded
-    const textureLoader = new THREE.TextureLoader();
-    textureLoader.load('map_layout.jpg', (texture) => {
-        texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-        texture.flipY = true;
-        ground.material = new THREE.MeshStandardMaterial({
-            map: texture,
-            roughness: 0.9,
-            metalness: 0.05,
-            side: THREE.DoubleSide
-        });
-    }, undefined, (err) => {
-        console.error("Error loading map texture asynchronously:", err);
-    });
 
     window.addEventListener('resize', onWindowResize);
 }
