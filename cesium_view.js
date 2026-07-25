@@ -7,12 +7,12 @@
 let viewer = null;
 let isCesiumActive = false;
 
-// Project Site GIS Bounds (Yacharam area site coordinates)
+// Project Site GIS Bounds (Exact Aspirealty Avatar 2 location: 16.92328 N, 78.53235 E)
 const siteBounds = {
-    west: 78.6649,
-    south: 17.0275,
-    east: 78.6749,
-    north: 17.0347
+    west: 78.53110,
+    south: 16.92248,
+    east: 78.53360,
+    north: 16.92408
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -103,7 +103,7 @@ function initCesiumViewer() {
     const centerLat = (siteBounds.south + siteBounds.north) / 2;
 
     viewer.camera.flyTo({
-        destination: Cesium.Cartesian3.fromDegrees(centerLng, centerLat - 0.002, 500),
+        destination: Cesium.Cartesian3.fromDegrees(centerLng, centerLat - 0.0015, 350),
         orientation: {
             heading: Cesium.Math.toRadians(0),
             pitch: Cesium.Math.toRadians(-45),
