@@ -103,7 +103,12 @@ function initCesiumViewer() {
         }
     });
 
-    // Add Ground Layout Overlay Image
+    // Suppress Cesium alert popup modal on WebGL rendering glitches
+    viewer.scene.renderError.addEventListener((scene, error) => {
+        console.warn('Cesium render event suppressed:', error);
+    });
+
+    // Add Ground Layout Overlay Image using Blob URL (prevents WebGL texImage2D SecurityError)
     const rectangle = Cesium.Rectangle.fromDegrees(
         siteBounds.west,
         siteBounds.south,
@@ -111,17 +116,39 @@ function initCesiumViewer() {
         siteBounds.north
     );
 
-    viewer.entities.add({
-        name: "Avatar 2 Project Layout Drawing",
-        rectangle: {
-            coordinates: rectangle,
-            material: new Cesium.ImageMaterialProperty({
-                image: 'map_layout.jpg',
-                transparent: true,
-                alpha: 0.85
-            })
-        }
-    });
+    fetch('map_layout.jpg')
+        .then(res => res.blob())
+        .then(blob => {
+            const objectUrl = URL.createObjectURL(blob);
+            viewer.entities.add({
+                name: "Avatar 2 Project Layout Drawing",
+                rectangle: {
+                    coordinates: rectangle,
+                    material: new Cesium.ImageMaterialProperty({
+                        image: objectUrl,
+                        transparent: true,
+                        alpha: 0.85
+                    })
+                }
+            });
+        })
+        .catch(() => {
+            // Fallback using Cesium Resource with explicit anonymous crossOrigin
+            viewer.entities.add({
+                name: "Avatar 2 Project Layout Drawing",
+                rectangle: {
+                    coordinates: rectangle,
+                    material: new Cesium.ImageMaterialProperty({
+                        image: new Cesium.Resource({
+                            url: 'map_layout.jpg',
+                            crossOrigin: 'anonymous'
+                        }),
+                        transparent: true,
+                        alpha: 0.85
+                    })
+                }
+            });
+        });
 
     // Add Plot Entities
     generateCesiumPlots();
