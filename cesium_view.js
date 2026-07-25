@@ -63,33 +63,22 @@ function setupCesiumControls() {
     });
 }
 
+// Disable Cesium red alert error panel popup globally
+if (typeof Cesium !== 'undefined') {
+    Cesium.showErrorPanel = function () {};
+}
+
 function initCesiumViewer() {
     if (typeof Cesium === 'undefined') {
         console.error('CesiumJS library not loaded.');
         return;
     }
 
-    // Disable red error alert popup modal completely
-    Cesium.showErrorPanel = function (title, message, error) {
-        console.warn('Cesium error popup suppressed:', title, message, error);
-    };
+    // Disable Cesium error panel
+    Cesium.showErrorPanel = function () {};
 
     // Disable Cesium Ion token requirement
     Cesium.Ion.defaultAccessToken = '';
-
-    // Global WebGL CORS Fix: Force imagery tiles to load as same-origin Blob URLs
-    const originalFetchImage = Cesium.Resource.prototype.fetchImage;
-    Cesium.Resource.prototype.fetchImage = function (options) {
-        options = options || {};
-        options.preferBlob = true;
-        return this.fetchBlob().then(function (blob) {
-            return Cesium.Resource.createImage({
-                url: URL.createObjectURL(blob)
-            });
-        }).catch(function () {
-            return originalFetchImage.call(this, options);
-        });
-    };
 
     // Initialize Cesium Viewer with open ESRI Satellite Imagery
     viewer = new Cesium.Viewer('cesiumContainer', {
