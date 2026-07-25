@@ -1150,41 +1150,5 @@ const plotDataRaw = [
         "dim_south":  "-",
         "dim_east":  "-",
         "dim_west":  "-"
-    },
-    {
-        "plot_no":  "96",
-        "plot_size":  "",
-        "facing":  "",
-        "plot_status":  "AVAILABLE",
-        "customer_name":  "",
-        "reference_name":  "",
-        "dim_north":  "-",
-        "dim_south":  "-",
-        "dim_east":  "-",
-        "dim_west":  "-"
-    },
-    {
-        "plot_no":  "96",
-        "plot_size":  "",
-        "facing":  "",
-        "plot_status":  "AVAILABLE",
-        "customer_name":  "",
-        "reference_name":  "",
-        "dim_north":  "-",
-        "dim_south":  "-",
-        "dim_east":  "-",
-        "dim_west":  "-"
-    },
-    {
-        "plot_no":  "96",
-        "plot_size":  "21619",
-        "facing":  "Total",
-        "plot_status":  "AVAILABLE",
-        "customer_name":  "",
-        "reference_name":  "",
-        "dim_north":  "-",
-        "dim_south":  "-",
-        "dim_east":  "-",
-        "dim_west":  "-"
     }
 ];

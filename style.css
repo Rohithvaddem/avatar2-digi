@@ -491,7 +491,7 @@ body {
 
 /* Map Container Dimensions set specifically to 1024x646 */
 .map-container {
-    position: relative;
+    position: absolute;
     width: 1024px;
     height: 646px;
     transform-origin: 0 0;
