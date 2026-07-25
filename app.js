@@ -266,6 +266,34 @@ function setupMapControls() {
         if (e.target.closest('.plot-dot') || e.target.closest('#plotModal')) return;
         fitMapToViewport();
     });
+
+    // Hook floating map control buttons
+    const zoomInBtn = document.getElementById('zoomInBtn');
+    const zoomOutBtn = document.getElementById('zoomOutBtn');
+    const recenterBtn = document.getElementById('recenterBtn');
+
+    if (zoomInBtn) {
+        zoomInBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            zoomScale = Math.min(zoomScale + 0.2, 4.0);
+            updateMapTransform();
+        });
+    }
+
+    if (zoomOutBtn) {
+        zoomOutBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            zoomScale = Math.max(zoomScale - 0.2, 0.4);
+            updateMapTransform();
+        });
+    }
+
+    if (recenterBtn) {
+        recenterBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            fitMapToViewport();
+        });
+    }
 }
 
 function updateMapTransform() {
