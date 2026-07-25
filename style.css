@@ -504,9 +504,6 @@ body {
     height: 646px;
     display: block;
     pointer-events: none;
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
-    filter: contrast(1.06) brightness(1.02);
 }
 
 .plots-overlay {
