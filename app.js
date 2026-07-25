@@ -308,7 +308,7 @@ function fitMapToViewport() {
     const scaleX = vWidth / 1024;
     const scaleY = vHeight / 646;
     
-    zoomScale = Math.min(scaleX, scaleY, 1.0) * 0.92; // 8% padding
+    zoomScale = Math.min(scaleX, scaleY);
     
     // Centering calculations
     panX = (vWidth - 1024 * zoomScale) / 2;
