@@ -91,7 +91,7 @@ window.addEventListener('load', () => {
                 loader.remove();
             }, 600); // Remove element after opacity transition completes
         }
-    }, 500); // Keep loader visible briefly for smooth transition
+    }, 1200); // Keep loader visible for 1.2 seconds for a premium feel
 });
 window.addEventListener('resize', fitMapToViewport);
 
