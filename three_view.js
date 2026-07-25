@@ -164,6 +164,7 @@ function initThreeScene() {
     const textureLoader = new THREE.TextureLoader();
     textureLoader.load('map_layout.jpg', (texture) => {
         texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        texture.flipY = true;
         ground.material = new THREE.MeshStandardMaterial({
             map: texture,
             roughness: 0.9,
@@ -195,7 +196,7 @@ function generatePlotMeshes() {
         const posZ = (coords.top - 323) * 0.1;
 
         // Create extruded low-poly box for the plot
-        const plotGeo = new THREE.BoxGeometry(2.1, 0.4, 2.1);
+        const plotGeo = new THREE.BoxGeometry(2.3, 0.04, 2.3);
         
         // Retrieve dynamic status color
         const plotDetail = plotData.find(p => String(p.plot_no) === String(plotNo));
@@ -212,8 +213,8 @@ function generatePlotMeshes() {
         });
 
         const plotMesh = new THREE.Mesh(plotGeo, plotMat);
-        // Position on surface (y half-height = 0.2)
-        plotMesh.position.set(posX, 0.2, posZ);
+        // Position on surface (y half-height = 0.02)
+        plotMesh.position.set(posX, 0.02, posZ);
         plotMesh.castShadow = true;
         plotMesh.receiveShadow = true;
         plotMesh.userData = { plotNo: plotNo, baseColor: color };
@@ -447,7 +448,7 @@ function startRendering() {
                     resetCurrentHover();
                     currentHoveredPlot = hitMesh;
                     currentHoveredPlot.material.opacity = 0.95;
-                    currentHoveredPlot.scale.set(1.05, 1.25, 1.05); // scale up slightly on hover
+                    currentHoveredPlot.scale.set(1.08, 1.0, 1.08); // scale horizontally slightly on hover
                 }
             } else {
                 document.body.style.cursor = 'default';
