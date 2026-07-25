@@ -78,6 +78,10 @@ window.addEventListener('DOMContentLoaded', () => {
     setupAdmin();
 });
 
+// Ensure map is fitted once all resources are loaded and on resize
+window.addEventListener('load', fitMapToViewport);
+window.addEventListener('resize', fitMapToViewport);
+
 // Initialization
 function initApp() {
     // Check local storage for custom database updates
