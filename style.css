@@ -578,15 +578,15 @@ body {
 }
 
 .map-control-btn {
-    width: 36px;
-    height: 36px;
+    width: 42px;
+    height: 42px;
     background-color: rgba(13, 20, 38, 0.9);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
+    border-radius: 10px;
     color: var(--text-primary);
-    font-size: 14px;
+    font-size: 16px;
     cursor: pointer;
     display: flex;
     align-items: center;
