@@ -64,7 +64,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setupFilters();
     setupMapper();
     setupAdmin();
-    setupWidgetsToggle();
+    setupTabNavigation();
 });
 
 // Initialization
@@ -165,7 +165,7 @@ function renderPlotDots() {
 
 function setupMapControls() {
     mapViewport.addEventListener('mousedown', (e) => {
-        if (e.target.closest('.plot-dot') || e.target.closest('.floating-panel') || e.target.closest('#plotModal')) return;
+        if (e.target.closest('.plot-dot') || e.target.closest('.control-dock-wrapper') || e.target.closest('.floating-panel') || e.target.closest('#plotModal')) return;
         isPanning = true;
         mapViewport.style.cursor = 'grabbing';
         startX = e.clientX - panX;
@@ -212,7 +212,7 @@ function setupMapControls() {
     let initialTouchDist = 0;
     mapViewport.addEventListener('touchstart', (e) => {
         if (e.touches.length === 1) {
-            if (e.target.closest('.plot-dot') || e.target.closest('.floating-panel') || e.target.closest('#plotModal')) return;
+            if (e.target.closest('.plot-dot') || e.target.closest('.control-dock-wrapper') || e.target.closest('.floating-panel') || e.target.closest('#plotModal')) return;
             isPanning = true;
             startX = e.touches[0].clientX - panX;
             startY = e.touches[0].clientY - panY;
@@ -248,7 +248,7 @@ function setupMapControls() {
 
     // Double click to reset viewport
     mapViewport.addEventListener('dblclick', (e) => {
-        if (e.target.closest('.plot-dot') || e.target.closest('.floating-panel') || e.target.closest('#plotModal')) return;
+        if (e.target.closest('.plot-dot') || e.target.closest('.control-dock-wrapper') || e.target.closest('.floating-panel') || e.target.closest('#plotModal')) return;
         fitMapToViewport();
     });
 
@@ -301,41 +301,61 @@ function fitMapToViewport() {
 }
 
 // ----------------------------------------------------
-// Widgets Show/Hide Toggles
+// Tab Navigation Implementation (Minimal Control Dock)
 // ----------------------------------------------------
 
-function setupWidgetsToggle() {
-    const legendToggleBtn = document.getElementById('legendToggleBtn');
-    const filterLegendPanel = document.getElementById('filterLegendPanel');
-    
-    if (legendToggleBtn && filterLegendPanel) {
-        // Desktop default: active styling
-        legendToggleBtn.style.backgroundColor = 'var(--accent)';
-        legendToggleBtn.style.color = '#fff';
+function setupTabNavigation() {
+    const tabBtns = document.querySelectorAll('.control-dock .tab-btn');
+    const dropdownPanel = document.getElementById('dockDropdownPanel');
+    const brandItem = document.getElementById('dockBrand');
 
-        legendToggleBtn.addEventListener('click', (e) => {
+    // Clicking brand triggers recentering
+    if (brandItem) {
+        brandItem.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (window.innerWidth <= 768) {
-                // Mobile behavior: slide sheet
-                filterLegendPanel.classList.toggle('show-mobile');
+            fitMapToViewport();
+            closeDropdownPanel();
+        });
+    }
+
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const targetTab = btn.dataset.tab;
+            const isActive = btn.classList.contains('active');
+
+            // Reset all buttons
+            tabBtns.forEach(b => b.classList.remove('active'));
+
+            if (isActive) {
+                // If clicked active, close dropdown
+                closeDropdownPanel();
             } else {
-                // Desktop behavior: toggle opacity smoothly
-                if (filterLegendPanel.style.opacity === '0') {
-                    filterLegendPanel.style.opacity = '1';
-                    filterLegendPanel.style.pointerEvents = 'auto';
-                    filterLegendPanel.style.transform = 'translateY(0)';
-                    legendToggleBtn.style.backgroundColor = 'var(--accent)';
-                    legendToggleBtn.style.color = '#fff';
-                } else {
-                    filterLegendPanel.style.opacity = '0';
-                    filterLegendPanel.style.pointerEvents = 'none';
-                    filterLegendPanel.style.transform = 'translateY(15px)';
-                    legendToggleBtn.style.backgroundColor = '';
-                    legendToggleBtn.style.color = '';
+                // Set current as active and show dropdown
+                btn.classList.add('active');
+                dropdownPanel.style.display = 'block';
+
+                // Hide all contents first
+                document.querySelectorAll('.dock-tab-content').forEach(c => c.style.display = 'none');
+                
+                // Show specific content
+                if (targetTab === 'search') {
+                    document.getElementById('tabContentSearch').style.display = 'block';
+                    searchInput.focus();
+                } else if (targetTab === 'status') {
+                    document.getElementById('tabContentStatus').style.display = 'block';
+                } else if (targetTab === 'facing') {
+                    document.getElementById('tabContentFacing').style.display = 'block';
                 }
             }
         });
-    }
+    });
+}
+
+function closeDropdownPanel() {
+    const dropdownPanel = document.getElementById('dockDropdownPanel');
+    if (dropdownPanel) dropdownPanel.style.display = 'none';
+    document.querySelectorAll('.control-dock .tab-btn').forEach(b => b.classList.remove('active'));
 }
 
 // ----------------------------------------------------
@@ -393,6 +413,7 @@ function showSearchSuggestions(query) {
             div.addEventListener('click', () => {
                 searchInput.value = plotNo;
                 searchSuggestions.style.display = 'none';
+                closeDropdownPanel(); // Close search tab panel when plot is selected
                 focusOnPlot(plotNo);
                 openPlotModal(plotNo);
             });
@@ -577,10 +598,7 @@ modalBackdrop.addEventListener('click', (e) => {
 mapViewport.addEventListener('click', (e) => {
     if (e.target === mapViewport || e.target === mapContainer || e.target === mapImage) {
         closePlotModal();
-        const filterLegendPanel = document.getElementById('filterLegendPanel');
-        if (filterLegendPanel) {
-            filterLegendPanel.classList.remove('show-mobile');
-        }
+        closeDropdownPanel();
     }
 });
 window.addEventListener('keydown', (e) => {

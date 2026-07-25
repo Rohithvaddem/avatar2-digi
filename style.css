@@ -69,6 +69,125 @@ body {
     cursor: grabbing;
 }
 
+/* Central Horizontal Navigation Dock */
+.control-dock-wrapper {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    z-index: 500;
+    pointer-events: auto;
+}
+
+.control-dock {
+    display: flex;
+    align-items: center;
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
+    border-radius: 30px;
+    padding: 6px 14px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    animation: fade-in-dock 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fade-in-dock {
+    from {
+        opacity: 0;
+        transform: translateY(-15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dock-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-family: var(--font-heading);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dock-item:hover {
+    color: var(--text-primary);
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dock-item.active {
+    background-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.brand-item {
+    color: #fff;
+    font-size: 14px;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, var(--accent), #10b981);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    padding-left: 8px;
+    cursor: pointer;
+    font-weight: 800;
+}
+
+.dock-divider {
+    width: 1px;
+    height: 18px;
+    background-color: var(--border-color);
+    margin: 0 8px;
+}
+
+.login-item {
+    padding: 8px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+/* Dropdown Panel */
+.dock-dropdown-panel {
+    width: 420px;
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
+    padding: 14px;
+    display: none;
+    animation: slide-down-dock 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slide-down-dock {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
 /* Immersive Floating Panels Base */
 .floating-panel {
     position: absolute;
@@ -80,69 +199,8 @@ body {
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
     padding: 16px;
     z-index: 100;
-    pointer-events: auto; /* Capture click events */
+    pointer-events: auto;
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
-    animation: fade-in-panel 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes fade-in-panel {
-    from {
-        opacity: 0;
-        transform: translateY(15px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* 1. Brand & Search Panel (Top Left) */
-.search-panel {
-    top: 20px;
-    left: 20px;
-    width: 320px;
-}
-
-.brand-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 14px;
-}
-
-.brand-logo {
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, var(--accent), #10b981);
-    border-radius: 8px;
-    color: #fff;
-    font-size: 14px;
-    box-shadow: 0 4px 10px var(--accent-glow);
-}
-
-.brand-name {
-    font-family: var(--font-heading);
-    font-size: 16px;
-    font-weight: 800;
-    letter-spacing: 0.5px;
-    background: linear-gradient(to right, #ffffff, var(--text-secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.approved-badge {
-    margin-left: auto;
-    background: rgba(16, 185, 129, 0.12);
-    color: var(--status-available);
-    border: 1px solid rgba(16, 185, 129, 0.2);
-    font-size: 9px;
-    font-weight: 700;
-    padding: 3px 8px;
-    border-radius: 20px;
-    text-transform: uppercase;
 }
 
 /* Search Box inside Panel */
@@ -192,7 +250,7 @@ body {
     border: none;
     color: var(--text-secondary);
     cursor: pointer;
-    font-size: 12px;
+    font-size: 14px;
     display: none;
 }
 
@@ -236,7 +294,7 @@ body {
     color: var(--text-secondary);
 }
 
-/* 2. Filters & Legends Panel (Bottom Left) */
+/* 2. Filters & Legends Panel (Mobile layout support fallback) */
 .filter-legend-panel {
     bottom: 20px;
     left: 20px;
@@ -725,31 +783,33 @@ body {
 
 /* Responsive Viewports */
 @media (max-width: 768px) {
-    .search-panel {
-        top: 15px;
+    .control-dock-wrapper {
         left: 15px;
         right: 15px;
-        width: auto;
+        transform: none;
+        width: calc(100% - 30px);
     }
     
-    .filter-legend-panel {
-        bottom: 85px;
-        left: 15px;
-        right: 15px;
-        width: auto;
-        transform: translateY(120%);
-        opacity: 0;
-        pointer-events: none;
+    .control-dock {
+        width: 100%;
+        justify-content: space-between;
+        padding: 6px 10px;
     }
     
-    /* When active on mobile, filters panel slides up */
-    .filter-legend-panel.show-mobile {
-        transform: translateY(0);
-        opacity: 1;
-        pointer-events: auto;
-        z-index: 120;
+    .dock-item {
+        padding: 8px 12px;
+        font-size: 11px;
     }
-
+    
+    /* Hide text labels on mobile screens to save space */
+    .dock-item span {
+        display: none;
+    }
+    
+    .dock-dropdown-panel {
+        width: 100%;
+    }
+    
     #plotModal {
         top: auto;
         bottom: 85px;

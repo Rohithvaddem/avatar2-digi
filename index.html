@@ -13,55 +13,75 @@
         <!-- Full-Screen Map Viewport Container -->
         <main class="map-viewport" id="mapViewport">
             
-            <!-- FLOATING WIDGET 1: Top-Left Brand & Search Panel -->
-            <div class="floating-panel search-panel" id="searchPanel">
-                <div class="brand-header">
-                    <div class="brand-logo"><i class="fa-solid fa-map"></i></div>
-                    <div class="brand-name">AVATAR 2 DIGI</div>
-                    <span class="badge approved-badge">DTCP Approved</span>
+            <!-- CENTRAL CONTROL DOCK -->
+            <div class="control-dock-wrapper" id="controlDockWrapper">
+                <!-- Horizontal Navigation Dock -->
+                <div class="control-dock" id="controlDock">
+                    <div class="dock-item brand-item" id="dockBrand" title="Fit Layout / Recenter">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                        <span>AVATAR 2</span>
+                    </div>
+                    <div class="dock-divider"></div>
+                    <button class="dock-item tab-btn" data-tab="search" id="tabSearchBtn">
+                        <i class="fa-solid fa-magnifying-glass"></i> Search
+                    </button>
+                    <button class="dock-item tab-btn" data-tab="status" id="tabStatusBtn">
+                        <i class="fa-solid fa-chart-pie"></i> Status
+                    </button>
+                    <button class="dock-item tab-btn" data-tab="facing" id="tabFacingBtn">
+                        <i class="fa-solid fa-compass"></i> Facing
+                    </button>
+                    <div class="dock-divider"></div>
+                    <button class="dock-item login-item" id="staffLoginBtn" title="Staff Login">
+                        <i class="fa-solid fa-lock"></i>
+                    </button>
                 </div>
                 
-                <div class="search-container">
-                    <div class="search-input-wrapper">
-                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                        <input type="text" class="search-input" id="searchInput" placeholder="Search Plot No. (e.g. 50)">
-                        <button class="search-clear-btn" id="searchClearBtn"><i class="fa-solid fa-circle-xmark"></i></button>
+                <!-- Dropdown panel for active tab -->
+                <div class="dock-dropdown-panel" id="dockDropdownPanel">
+                    <!-- Search Tab Content -->
+                    <div class="dock-tab-content" id="tabContentSearch" style="display: none;">
+                        <div class="search-container">
+                            <div class="search-input-wrapper">
+                                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                                <input type="text" class="search-input" id="searchInput" placeholder="Search Plot No. (e.g. 50)">
+                                <button class="search-clear-btn" id="searchClearBtn"><i class="fa-solid fa-circle-xmark"></i></button>
+                            </div>
+                            <div class="search-suggestions" id="searchSuggestions"></div>
+                        </div>
                     </div>
-                    <div class="search-suggestions" id="searchSuggestions"></div>
+                    
+                    <!-- Status Tab Content -->
+                    <div class="dock-tab-content" id="tabContentStatus" style="display: none;">
+                        <div class="legend-grid" id="statusLegendList">
+                            <!-- Dynamic rendering by app.js -->
+                        </div>
+                    </div>
+                    
+                    <!-- Facing Tab Content -->
+                    <div class="dock-tab-content" id="tabContentFacing" style="display: none;">
+                        <div class="facing-section">
+                            <div class="section-header">
+                                <span class="section-title">Filter by Facing</span>
+                                <button class="filter-reset-btn" id="facingResetBtn">Clear</button>
+                            </div>
+                            <div class="filter-grid" id="facingFilterGrid">
+                                <button class="filter-pill" data-facing="East">East</button>
+                                <button class="filter-pill" data-facing="West">West</button>
+                                <button class="filter-pill" data-facing="North">North</button>
+                                <button class="filter-pill" data-facing="South">South</button>
+                                <button class="filter-pill" data-facing="North-East">N-East</button>
+                                <button class="filter-pill" data-facing="North-West">N-West</button>
+                                <button class="filter-pill" data-facing="South-East">S-East</button>
+                                <button class="filter-pill" data-facing="South-West">S-West</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- FLOATING WIDGET 2: Bottom-Left Filters & Legends Panel -->
-            <div class="floating-panel filter-legend-panel" id="filterLegendPanel">
-                <div class="panel-section">
-                    <div class="section-header">
-                        <span class="section-title">Plot Statuses</span>
-                    </div>
-                    <div class="legend-grid" id="statusLegendList">
-                        <!-- Dynamic rendering by app.js -->
-                    </div>
-                </div>
-                
-                <div class="panel-section" style="margin-top: 14px; border-top: 1px solid var(--border-color); padding-top: 14px;">
-                    <div class="section-header">
-                        <span class="section-title">Filter by Facing</span>
-                        <button class="filter-reset-btn" id="facingResetBtn">Clear</button>
-                    </div>
-                    <div class="filter-grid" id="facingFilterGrid">
-                        <button class="filter-pill" data-facing="East">East</button>
-                        <button class="filter-pill" data-facing="West">West</button>
-                        <button class="filter-pill" data-facing="North">North</button>
-                        <button class="filter-pill" data-facing="South">South</button>
-                        <button class="filter-pill" data-facing="North-East">N-East</button>
-                        <button class="filter-pill" data-facing="North-West">N-West</button>
-                        <button class="filter-pill" data-facing="South-East">S-East</button>
-                        <button class="filter-pill" data-facing="South-West">S-West</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- FLOATING WIDGET 3: Top-Right Admin CMS Panel -->
-            <div class="floating-panel admin-panel" id="mapperSection" style="display: none;">
+            <!-- FLOATING WIDGET: Top-Left Admin CMS Panel (only when logged in) -->
+            <div class="floating-panel admin-panel" id="mapperSection" style="display: none; top: 90px; left: 20px;">
                 <div class="section-header">
                     <span class="section-title" style="color: var(--accent); margin-bottom: 0;"><i class="fa-solid fa-map-pin"></i> Coordinate Mapper</span>
                     <button class="filter-reset-btn" id="toggleMapperBtn">Start</button>
@@ -80,13 +100,11 @@
                 </div>
             </div>
 
-            <!-- FLOATING WIDGET 4: Bottom-Right Map Controls -->
+            <!-- FLOATING WIDGET: Bottom-Right Map Controls -->
             <div class="map-controls">
                 <button class="map-control-btn" id="zoomInBtn" title="Zoom In"><i class="fa-solid fa-plus"></i></button>
                 <button class="map-control-btn" id="zoomOutBtn" title="Zoom Out"><i class="fa-solid fa-minus"></i></button>
                 <button class="map-control-btn" id="recenterBtn" title="Recenter Map"><i class="fa-solid fa-arrows-to-dot"></i></button>
-                <button class="map-control-btn" id="legendToggleBtn" title="Toggle Filters/Legend"><i class="fa-solid fa-sliders"></i></button>
-                <button class="map-control-btn" id="staffLoginBtn" title="Staff Login"><i class="fa-solid fa-lock"></i></button>
             </div>
 
             <!-- Drag/Zoom Container (exact landscape size 1024x646) -->
@@ -136,7 +154,7 @@
                     <div id="loginError" style="color: var(--status-mortgage); font-size: 11px; text-align: left; display: none; font-weight: 600; margin-top: 2px;">
                         <i class="fa-solid fa-circle-exclamation"></i> Invalid credentials!
                     </div>
-                    <button type="submit" class="action-btn-sm" style="background-color: var(--accent); color: #fff; border: none; font-weight: 700; padding: 12px; font-size: 13px; margin-top: 6px; cursor: pointer; border-radius: 8px;">
+                    <button type="submit" class="action-btn-sm" style="background-color: var(--accent); color: #fff; border: none; font-weight: 700; padding: 12px; font-size: 13px; margin-top: 6px; cursor: pointer; border-radius: 8px; width:100%; justify-content:center;">
                         Login
                     </button>
                 </form>
