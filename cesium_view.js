@@ -88,7 +88,7 @@ function initCesiumViewer() {
     const centerLat = (siteBounds.south + siteBounds.north) / 2;
 
     viewer.camera.flyTo({
-        destination: Cesium.Cartesian3.fromDegrees(centerLng, centerLat - 0.003, 1200),
+        destination: Cesium.Cartesian3.fromDegrees(centerLng, centerLat - 0.002, 500),
         orientation: {
             heading: Cesium.Math.toRadians(0),
             pitch: Cesium.Math.toRadians(-45),
@@ -155,25 +155,24 @@ function generateCesiumPlots() {
         const status = plotDetail ? plotDetail.plot_status : 'AVAILABLE';
         const color = getCesiumStatusColor(status);
 
-        // Add 3D Point & Box Entity for the Plot
+        // Add extruded 3D Box Entity for the Plot
         const entity = viewer.entities.add({
             name: `Plot ${plotNo}`,
-            position: Cesium.Cartesian3.fromDegrees(lng, lat, 10),
-            point: {
-                pixelSize: 14,
-                color: color,
-                outlineColor: Cesium.Color.WHITE,
-                outlineWidth: 2,
-                heightReference: Cesium.HeightReference.RELATIVE_TO_GROUND
+            position: Cesium.Cartesian3.fromDegrees(lng, lat, 4),
+            box: {
+                dimensions: new Cesium.Cartesian3(22.0, 22.0, 8.0),
+                material: color.withAlpha(0.75),
+                outline: true,
+                outlineColor: Cesium.Color.WHITE
             },
             label: {
                 text: `${plotNo}`,
-                font: '11px sans-serif',
+                font: 'bold 12px sans-serif',
                 fillColor: Cesium.Color.WHITE,
                 outlineColor: Cesium.Color.BLACK,
-                outlineWidth: 2,
+                outlineWidth: 3,
                 style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-                pixelOffset: new Cesium.Cartesian2(0, -16),
+                pixelOffset: new Cesium.Cartesian2(0, -18),
                 heightReference: Cesium.HeightReference.RELATIVE_TO_GROUND
             }
         });
