@@ -1,6 +1,6 @@
 /*
    ====================================================
-   Avatar 2 Digital Layout - Immersive Floating Design JS
+   Avatar 2 Digital Layout App JS
    ====================================================
 */
 
@@ -40,6 +40,16 @@ const modalBody = document.getElementById('modalBody');
 const modalCloseBtn = document.getElementById('modalCloseBtn');
 const mapTip = document.getElementById('mapTip');
 
+// Sidebar responsive controls
+const sidebar = document.getElementById('sidebar');
+const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+
+// Statistics DOM
+const statTotalPlots = document.getElementById('statTotalPlots');
+const statAvailablePlots = document.getElementById('statAvailablePlots');
+const statBookedPlots = document.getElementById('statBookedPlots');
+
 // Mapper DOM
 const mapperSection = document.getElementById('mapperSection');
 const toggleMapperBtn = document.getElementById('toggleMapperBtn');
@@ -55,6 +65,7 @@ const loginForm = document.getElementById('loginForm');
 const loginUsername = document.getElementById('loginUsername');
 const loginPassword = document.getElementById('loginPassword');
 const loginError = document.getElementById('loginError');
+const sidebarFooter = document.getElementById('sidebarFooter');
 
 // Setup Application
 window.addEventListener('DOMContentLoaded', () => {
@@ -62,9 +73,9 @@ window.addEventListener('DOMContentLoaded', () => {
     setupMapControls();
     setupSearch();
     setupFilters();
+    setupMobileSidebar();
     setupMapper();
     setupAdmin();
-    setupTabNavigation();
 });
 
 // Initialization
@@ -149,7 +160,7 @@ function renderPlotDots() {
         
         dot.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (isMapperMode) return;
+            if (isMapperMode) return; // Disallow in mapper mode
             openPlotModal(plotNo);
         });
         
@@ -165,7 +176,8 @@ function renderPlotDots() {
 
 function setupMapControls() {
     mapViewport.addEventListener('mousedown', (e) => {
-        if (e.target.closest('.plot-dot') || e.target.closest('.control-dock-wrapper') || e.target.closest('.floating-panel') || e.target.closest('#plotModal')) return;
+        // Disallow panning if clicking a dot or details modal
+        if (e.target.closest('.plot-dot') || e.target.closest('#plotModal')) return;
         isPanning = true;
         mapViewport.style.cursor = 'grabbing';
         startX = e.clientX - panX;
@@ -191,10 +203,12 @@ function setupMapControls() {
         e.preventDefault();
         const zoomIntensity = 0.1;
         
+        // Viewport center context coordinates
         const rect = mapContainer.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
         
+        // Calculate new scale
         const previousScale = zoomScale;
         if (e.deltaY < 0) {
             zoomScale = Math.min(zoomScale + zoomIntensity, 4.0);
@@ -202,6 +216,7 @@ function setupMapControls() {
             zoomScale = Math.max(zoomScale - zoomIntensity, 0.4);
         }
         
+        // Offset pan adjustment so mouse remains focal point
         panX -= (mouseX / previousScale) * (zoomScale - previousScale);
         panY -= (mouseY / previousScale) * (zoomScale - previousScale);
         
@@ -212,7 +227,7 @@ function setupMapControls() {
     let initialTouchDist = 0;
     mapViewport.addEventListener('touchstart', (e) => {
         if (e.touches.length === 1) {
-            if (e.target.closest('.plot-dot') || e.target.closest('.control-dock-wrapper') || e.target.closest('.floating-panel') || e.target.closest('#plotModal')) return;
+            if (e.target.closest('.plot-dot') || e.target.closest('#plotModal')) return;
             isPanning = true;
             startX = e.touches[0].clientX - panX;
             startY = e.touches[0].clientY - panY;
@@ -248,7 +263,7 @@ function setupMapControls() {
 
     // Double click to reset viewport
     mapViewport.addEventListener('dblclick', (e) => {
-        if (e.target.closest('.plot-dot') || e.target.closest('.control-dock-wrapper') || e.target.closest('.floating-panel') || e.target.closest('#plotModal')) return;
+        if (e.target.closest('.plot-dot') || e.target.closest('#plotModal')) return;
         fitMapToViewport();
     });
 
@@ -289,73 +304,17 @@ function fitMapToViewport() {
     const vWidth = mapViewport.clientWidth;
     const vHeight = mapViewport.clientHeight;
     
+    // Fit to exact display boundaries (1024x646)
     const scaleX = vWidth / 1024;
     const scaleY = vHeight / 646;
     
-    zoomScale = Math.min(scaleX, scaleY, 1.0) * 0.90; // 10% padding
+    zoomScale = Math.min(scaleX, scaleY, 1.0) * 0.92; // 8% padding
     
+    // Centering calculations
     panX = (vWidth - 1024 * zoomScale) / 2;
     panY = (vHeight - 646 * zoomScale) / 2;
     
     updateMapTransform();
-}
-
-// ----------------------------------------------------
-// Tab Navigation Implementation (Minimal Control Dock)
-// ----------------------------------------------------
-
-function setupTabNavigation() {
-    const tabBtns = document.querySelectorAll('.control-dock .tab-btn');
-    const dropdownPanel = document.getElementById('dockDropdownPanel');
-    const brandItem = document.getElementById('dockBrand');
-
-    // Clicking brand triggers recentering
-    if (brandItem) {
-        brandItem.addEventListener('click', (e) => {
-            e.stopPropagation();
-            fitMapToViewport();
-            closeDropdownPanel();
-        });
-    }
-
-    tabBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const targetTab = btn.dataset.tab;
-            const isActive = btn.classList.contains('active');
-
-            // Reset all buttons
-            tabBtns.forEach(b => b.classList.remove('active'));
-
-            if (isActive) {
-                // If clicked active, close dropdown
-                closeDropdownPanel();
-            } else {
-                // Set current as active and show dropdown
-                btn.classList.add('active');
-                dropdownPanel.style.display = 'block';
-
-                // Hide all contents first
-                document.querySelectorAll('.dock-tab-content').forEach(c => c.style.display = 'none');
-                
-                // Show specific content
-                if (targetTab === 'search') {
-                    document.getElementById('tabContentSearch').style.display = 'block';
-                    searchInput.focus();
-                } else if (targetTab === 'status') {
-                    document.getElementById('tabContentStatus').style.display = 'block';
-                } else if (targetTab === 'facing') {
-                    document.getElementById('tabContentFacing').style.display = 'block';
-                }
-            }
-        });
-    });
-}
-
-function closeDropdownPanel() {
-    const dropdownPanel = document.getElementById('dockDropdownPanel');
-    if (dropdownPanel) dropdownPanel.style.display = 'none';
-    document.querySelectorAll('.control-dock .tab-btn').forEach(b => b.classList.remove('active'));
 }
 
 // ----------------------------------------------------
@@ -379,11 +338,13 @@ function setupSearch() {
         searchClearBtn.style.display = 'none';
         searchSuggestions.style.display = 'none';
         
+        // Remove search highlights
         document.querySelectorAll('.plot-dot.highlighted').forEach(dot => {
             dot.classList.remove('highlighted');
         });
     });
 
+    // Close suggestions dropdown when clicking outside
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.search-container')) {
             searchSuggestions.style.display = 'none';
@@ -394,6 +355,7 @@ function setupSearch() {
 function showSearchSuggestions(query) {
     searchSuggestions.innerHTML = '';
     
+    // Filter plotDataRaw/coords mapped plots matching search
     const matches = Object.keys(plotCoordinates).filter(plotNo => {
         return String(plotNo).includes(query);
     }).sort((a, b) => parseInt(a) - parseInt(b));
@@ -413,7 +375,6 @@ function showSearchSuggestions(query) {
             div.addEventListener('click', () => {
                 searchInput.value = plotNo;
                 searchSuggestions.style.display = 'none';
-                closeDropdownPanel(); // Close search tab panel when plot is selected
                 focusOnPlot(plotNo);
                 openPlotModal(plotNo);
             });
@@ -437,6 +398,7 @@ function focusOnPlot(plotNo) {
     const dot = document.getElementById(`plot-dot-${plotNo}`);
     if (dot) dot.classList.add('highlighted');
     
+    // Center viewport focusing on targets
     zoomScale = 1.0;
     const vWidth = mapViewport.clientWidth;
     const vHeight = mapViewport.clientHeight;
@@ -452,6 +414,7 @@ function focusOnPlot(plotNo) {
 // ----------------------------------------------------
 
 function setupFilters() {
+    // 1. Facing Filters (Pills)
     facingFilterGrid.querySelectorAll('.filter-pill').forEach(pill => {
         pill.addEventListener('click', () => {
             const facing = pill.dataset.facing;
@@ -475,15 +438,18 @@ function setupFilters() {
 
 function applyFilters() {
     document.querySelectorAll('.plot-dot').forEach(dot => {
+        const plotNo = dot.dataset.plotNo;
         const facing = dot.dataset.facing;
         const status = dot.dataset.status;
         
         let show = true;
         
+        // Apply Facing constraint
         if (activeFacingFilters.size > 0 && !activeFacingFilters.has(facing)) {
             show = false;
         }
         
+        // Apply Status constraint
         if (activeStatusFilters.size > 0 && !activeStatusFilters.has(status)) {
             show = false;
         }
@@ -519,8 +485,8 @@ function openPlotModal(plotNo) {
     let editButtonHtml = '';
     if (isAdminLoggedIn) {
         editButtonHtml = `
-            <button class="action-btn-sm" id="editPlotBtn" style="background: var(--accent); color: #fff; border: none; font-weight: 700; width: 100%; margin-top: 10px; padding: 10px; font-size: 12px;">
-                <i class="fa-solid fa-pen-to-square"></i> Edit Details
+            <button class="admin-login-btn" id="editPlotBtn" style="background: var(--accent); color: #fff; border: none; font-weight: 700; width: 100%; margin-top: 15px; cursor: pointer; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; font-size: 14px;">
+                <i class="fa-solid fa-pen-to-square"></i> Edit Plot Details
             </button>
         `;
     }
@@ -529,7 +495,7 @@ function openPlotModal(plotNo) {
         <div class="detail-card">
             <div class="detail-row">
                 <span class="detail-label">Plot Number</span>
-                <span class="detail-val" style="font-size: 15px; font-weight: 700; color: var(--accent)"># ${item.plot_no}</span>
+                <span class="detail-val" style="font-size: 18px; font-weight: 700; color: var(--accent)"># ${item.plot_no}</span>
             </div>
             <div class="detail-row">
                 <span class="detail-label">Status</span>
@@ -598,7 +564,6 @@ modalBackdrop.addEventListener('click', (e) => {
 mapViewport.addEventListener('click', (e) => {
     if (e.target === mapViewport || e.target === mapContainer || e.target === mapImage) {
         closePlotModal();
-        closeDropdownPanel();
     }
 });
 window.addEventListener('keydown', (e) => {
@@ -615,6 +580,7 @@ function closePlotModal() {
 
 function updateStatistics() {
     const totalCount = plotData.length;
+    statTotalPlots.textContent = totalCount;
     
     let counts = { AVAILABLE: 0, SOLD: 0, HOLD: 0, MORTGAGE: 0 };
     plotData.forEach(p => {
@@ -625,6 +591,9 @@ function updateStatistics() {
             counts.SOLD++;
         }
     });
+
+    statAvailablePlots.textContent = counts.AVAILABLE;
+    statBookedPlots.textContent = counts.SOLD;
     
     // Render Sidebar Legend items
     statusLegendList.innerHTML = `
@@ -638,7 +607,7 @@ function updateStatistics() {
         <div class="legend-item" id="legend-SOLD" style="--legend-color: var(--status-sold);">
             <div class="legend-label-group">
                 <div class="legend-color-dot"></div>
-                <span class="legend-name">Sold</span>
+                <span class="legend-name">Sold / Booked</span>
             </div>
             <span class="legend-count">${counts.SOLD}</span>
         </div>
@@ -709,14 +678,16 @@ function setupMapper() {
         }
     });
 
-    // Capture click on map container directly
+    // Capture click on map container directly (1024x646 coordinates)
     mapContainer.addEventListener('click', (e) => {
         if (!isMapperMode) return;
         
+        // Get absolute coordinates on the 1024x646 scale
         const rect = mapImage.getBoundingClientRect();
         const clickX = Math.round((e.clientX - rect.left) / zoomScale);
         const clickY = Math.round((e.clientY - rect.top) / zoomScale);
         
+        // Save direct coordinates without scaling (fresh project!)
         plotCoordinates[activeMapperPlot] = {
             left: clickX,
             top: clickY
@@ -731,6 +702,7 @@ function setupMapper() {
             activeBtn.style.borderColor = 'var(--status-available)';
         }
         
+        // Auto-advance up to plot 96
         if (activeMapperPlot < 96) {
             activeMapperPlot++;
             mapperActivePlot.value = activeMapperPlot;
@@ -742,6 +714,7 @@ function setupMapper() {
     mapperExportBtn.addEventListener('click', () => {
         const coordsStr = "const plotCoordinates = " + JSON.stringify(plotCoordinates, null, 4) + ";";
         
+        // Create popup with exported code
         const overlay = document.createElement('div');
         overlay.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(5,7,10,0.85);backdrop-filter:blur(8px);z-index:9999;display:flex;align-items:center;justify-content:center;';
         
@@ -757,7 +730,7 @@ function setupMapper() {
                 Copy all coordinates code below and replace the entire content inside <b>plot_coords.js</b> file.
             </p>
             <textarea readonly style="width:100%;height:250px;background:var(--bg-tertiary);border:1px solid var(--border-color);color:#a7f3d0;padding:12px;border-radius:8px;font-family:monospace;font-size:11px;outline:none;resize:none;">${coordsStr}</textarea>
-            <button id="copyExportCode" class="action-btn-sm" style="background:var(--accent);color:#fff;border:none;font-weight:700;padding:12px;border-radius:8px;cursor:pointer;width:100%;justify-content:center;font-size:13px;">
+            <button id="copyExportCode" class="admin-login-btn" style="background:var(--accent);color:#fff;border:none;font-weight:700;padding:12px;border-radius:8px;cursor:pointer;">
                 <i class="fa-solid fa-copy"></i> Copy to Clipboard
             </button>
         `;
@@ -783,6 +756,7 @@ function buildMapperPlotList() {
         btn.style.cssText = 'background:rgba(255,255,255,0.02);border:1px solid var(--border-color);color:var(--text-secondary);font-size:10px;font-weight:700;padding:6px 0;border-radius:4px;cursor:pointer;transition:all 0.15s;';
         btn.textContent = i;
         
+        // Style green if already mapped
         if (plotCoordinates[i]) {
             btn.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
             btn.style.color = 'var(--status-available)';
@@ -823,22 +797,34 @@ function highlightActiveMapperButton() {
 }
 
 // ----------------------------------------------------
+// Mobile responsive navigation
+// ----------------------------------------------------
+
+function setupMobileSidebar() {
+    sidebarToggleBtn.addEventListener('click', () => {
+        sidebar.classList.add('show');
+    });
+    sidebarCloseBtn.addEventListener('click', () => {
+        sidebar.classList.remove('show');
+    });
+    sidebar.addEventListener('click', (e) => {
+        if (window.innerWidth <= 992) {
+            if (e.target.closest('.suggestion-item') || e.target.closest('.filter-pill') || e.target.closest('.legend-item')) {
+                sidebar.classList.remove('show');
+            }
+        }
+    });
+}
+
+// ----------------------------------------------------
 // Admin Mode Implementation
 // ----------------------------------------------------
 
 function setupAdmin() {
     const staffBtn = document.getElementById('staffLoginBtn');
     if (staffBtn) {
-        staffBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (isAdminLoggedIn) {
-                if (confirm('Do you want to logout of Admin mode?')) {
-                    isAdminLoggedIn = false;
-                    sessionStorage.removeItem('isAdminLoggedIn');
-                    window.location.reload();
-                }
-                return;
-            }
+        staffBtn.addEventListener('click', () => {
+            if (isAdminLoggedIn) return;
             loginModalBackdrop.classList.add('show');
             loginError.style.display = 'none';
             loginForm.reset();
@@ -880,86 +866,77 @@ function setupAdmin() {
 }
 
 function setupAdminState() {
-    const staffBtn = document.getElementById('staffLoginBtn');
-    const mapperSection = document.getElementById('mapperSection');
+    if (!sidebarFooter) return;
 
     if (isAdminLoggedIn) {
-        if (staffBtn) {
-            staffBtn.style.backgroundColor = 'var(--status-hold)';
-            staffBtn.style.color = '#fff';
-            staffBtn.style.borderColor = 'var(--status-hold)';
-            staffBtn.innerHTML = '<i class="fa-solid fa-user-shield"></i>';
-            staffBtn.title = "Admin Mode Active (Click to Logout)";
-        }
-        
-        if (mapperSection) {
-            mapperSection.style.display = 'block';
-            
-            // Build CMS tools inside mapper panel
-            let cmsControls = document.getElementById('adminCmsControls');
-            if (!cmsControls) {
-                cmsControls = document.createElement('div');
-                cmsControls.id = 'adminCmsControls';
-                cmsControls.style.cssText = 'margin-top: 14px; border-top: 1px solid var(--border-color); padding-top: 14px; display: flex; flex-direction: column; gap: 8px;';
-                cmsControls.innerHTML = `
-                    <button class="action-btn-sm" id="exportDbBtn" style="background-color: var(--accent); color: #fff; border: none; width: 100%;">
-                        <i class="fa-solid fa-download"></i> Export data.json
-                    </button>
-                    <button class="action-btn-sm" id="resetDbBtn" style="width: 100%; font-size: 10px;">
-                        <i class="fa-solid fa-rotate-left"></i> Reset to Default
-                    </button>
-                    <button class="action-btn-sm" id="logoutBtn" style="background-color: var(--status-mortgage); color: #fff; border: none; width: 100%;">
-                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout Admin
-                    </button>
-                `;
-                mapperSection.appendChild(cmsControls);
-                
-                document.getElementById('exportDbBtn').addEventListener('click', () => {
-                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(plotData, null, 4));
-                    const downloadAnchor = document.createElement('a');
-                    downloadAnchor.setAttribute("href", dataStr);
-                    downloadAnchor.setAttribute("download", "data.json");
-                    document.body.appendChild(downloadAnchor);
-                    downloadAnchor.click();
-                    downloadAnchor.remove();
-                });
-                
-                document.getElementById('resetDbBtn').addEventListener('click', () => {
-                    if (confirm('Discard all local changes and reset database?')) {
-                        localStorage.removeItem('aspire_avatar2_data');
-                        window.location.reload();
-                    }
-                });
-                
-                document.getElementById('logoutBtn').addEventListener('click', () => {
-                    isAdminLoggedIn = false;
-                    sessionStorage.removeItem('isAdminLoggedIn');
-                    window.location.reload();
-                });
+        if (mapperSection) mapperSection.style.display = 'block';
+
+        sidebarFooter.innerHTML = `
+            <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; padding: 0 4px;">
+                <button class="admin-login-btn" id="exportDbBtn" style="background-color: var(--accent); color: #fff; border: none; font-weight: 700; cursor: pointer; padding: 10px; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; font-size: 13px;">
+                    <i class="fa-solid fa-download"></i> Export data.json
+                </button>
+                <button class="admin-login-btn" id="resetDbBtn" style="background-color: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-color); font-weight: 600; cursor: pointer; padding: 8px; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; font-size: 11px;">
+                    <i class="fa-solid fa-rotate-left"></i> Reset to Default
+                </button>
+                <button class="admin-login-btn" id="logoutBtn" style="background-color: var(--status-mortgage); color: #fff; border: none; font-weight: 700; cursor: pointer; padding: 10px; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; font-size: 13px;">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Admin Logout
+                </button>
+            </div>
+        `;
+
+        document.getElementById('exportDbBtn').addEventListener('click', () => {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(plotData, null, 4));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "data.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        });
+
+        document.getElementById('resetDbBtn').addEventListener('click', () => {
+            if (confirm('Discard all local custom changes and reset the layout back to standard sheet data?')) {
+                localStorage.removeItem('aspire_avatar2_data');
+                window.location.reload();
             }
-        }
-        
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            isAdminLoggedIn = false;
+            sessionStorage.removeItem('isAdminLoggedIn');
+            alert('Admin mode disabled.');
+            window.location.reload();
+        });
+
         let banner = document.getElementById('adminBanner');
         if (!banner) {
             banner = document.createElement('div');
             banner.id = 'adminBanner';
-            banner.style.cssText = 'position: absolute; bottom: 85px; left: 50%; transform: translateX(-50%); background: linear-gradient(90deg, #b45309, #d97706); color: #fff; text-align: center; padding: 6px 14px; font-size: 11px; font-weight: 700; border-radius: 20px; display: flex; align-items: center; justify-content: center; gap: 6px; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.5);';
-            banner.innerHTML = `<i class="fa-solid fa-user-shield"></i> Admin Session Active`;
-            mapViewport.appendChild(banner);
+            banner.style.cssText = 'background: linear-gradient(90deg, #b45309, #d97706); color: #fff; text-align: center; padding: 8px; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; z-index: 1000; position: relative;';
+            banner.innerHTML = `<i class="fa-solid fa-user-shield"></i> ADMINISTRATOR MODE ACTIVE &bull; Click any plot card to edit details, or use the Coordinate Mapper`;
+            document.body.insertBefore(banner, document.body.firstChild);
         }
     } else {
-        if (staffBtn) {
-            staffBtn.style.backgroundColor = '';
-            staffBtn.style.color = '';
-            staffBtn.style.borderColor = '';
-            staffBtn.innerHTML = '<i class="fa-solid fa-lock"></i>';
-            staffBtn.title = "Staff Login";
-        }
-        
         if (mapperSection) mapperSection.style.display = 'none';
-        
+
+        sidebarFooter.innerHTML = `
+            <button class="admin-login-btn" id="staffLoginBtn" style="border: none; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <i class="fa-solid fa-lock"></i> Staff Login
+            </button>
+        `;
+
         const banner = document.getElementById('adminBanner');
         if (banner) banner.remove();
+
+        const staffBtn = document.getElementById('staffLoginBtn');
+        if (staffBtn) {
+            staffBtn.addEventListener('click', () => {
+                loginModalBackdrop.classList.add('show');
+                loginError.style.display = 'none';
+                loginForm.reset();
+            });
+        }
     }
 }
 
@@ -978,17 +955,17 @@ function openPlotEditForm(plotNo) {
     };
 
     modalBody.innerHTML = `
-        <div class="edit-plot-form" style="display: flex; flex-direction: column; gap: 12px; text-align: left; max-height: 65vh; overflow-y: auto; padding-right: 4px;">
+        <div class="edit-plot-form" style="display: flex; flex-direction: column; gap: 12px; text-align: left; max-height: 70vh; overflow-y: auto; padding-right: 8px;">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 8px;">
-                <span style="font-weight: 700; color: var(--accent); font-size: 14px;"><i class="fa-solid fa-edit"></i> Edit Plot #${item.plot_no}</span>
-                <button id="cancelEditBtn" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                <span style="font-weight: 700; color: var(--accent); font-size: 16px;"><i class="fa-solid fa-edit"></i> Edit Plot #${item.plot_no}</span>
+                <button id="cancelEditBtn" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 4px;">
                     <i class="fa-solid fa-xmark"></i> Cancel
                 </button>
             </div>
             
             <div style="display: flex; flex-direction: column; gap: 4px;">
-                <label style="font-size: 10px; font-weight: 600; color: var(--text-secondary);">Plot Status</label>
-                <select id="editStatus" style="background: var(--bg-tertiary); border: 1px solid var(--border-color); color: #fff; padding: 6px; border-radius: 6px; font-size: 12px; outline: none; width: 100%;">
+                <label style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">Plot Status</label>
+                <select id="editStatus" style="background: var(--bg-tertiary); border: 1px solid var(--border-color); color: #fff; padding: 8px 10px; border-radius: 6px; font-size: 13px; outline: none; width: 100%;">
                     <option value="AVAILABLE" ${item.plot_status === 'AVAILABLE' ? 'selected' : ''}>AVAILABLE</option>
                     <option value="SOLD" ${item.plot_status === 'SOLD' ? 'selected' : ''}>SOLD</option>
                     <option value="MORTGAGE" ${item.plot_status === 'MORTGAGE' ? 'selected' : ''}>MORTGAGE</option>
@@ -997,13 +974,13 @@ function openPlotEditForm(plotNo) {
             </div>
             
             <div style="display: flex; flex-direction: column; gap: 4px;">
-                <label style="font-size: 10px; font-weight: 600; color: var(--text-secondary);">Plot Size (Sq. Yards)</label>
-                <input type="text" id="editSize" value="${item.plot_size || ''}" style="background: var(--bg-tertiary); border: 1px solid var(--border-color); color: #fff; padding: 6px; border-radius: 6px; font-size: 12px; outline: none;">
+                <label style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">Plot Size (Sq. Yards)</label>
+                <input type="text" id="editSize" value="${item.plot_size || ''}" style="background: var(--bg-tertiary); border: 1px solid var(--border-color); color: #fff; padding: 8px 10px; border-radius: 6px; font-size: 13px; outline: none;">
             </div>
             
             <div style="display: flex; flex-direction: column; gap: 4px;">
-                <label style="font-size: 10px; font-weight: 600; color: var(--text-secondary);">Facing Direction</label>
-                <select id="editFacing" style="background: var(--bg-tertiary); border: 1px solid var(--border-color); color: #fff; padding: 6px; border-radius: 6px; font-size: 12px; outline: none; width: 100%;">
+                <label style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">Facing Direction</label>
+                <select id="editFacing" style="background: var(--bg-tertiary); border: 1px solid var(--border-color); color: #fff; padding: 8px 10px; border-radius: 6px; font-size: 13px; outline: none; width: 100%;">
                     <option value="East" ${item.facing === 'East' ? 'selected' : ''}>East</option>
                     <option value="West" ${item.facing === 'West' ? 'selected' : ''}>West</option>
                     <option value="North" ${item.facing === 'North' ? 'selected' : ''}>North</option>
@@ -1018,36 +995,36 @@ function openPlotEditForm(plotNo) {
                 </select>
             </div>
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                 <div style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-size: 10px; color: var(--text-secondary);">North Bound</label>
-                    <input type="text" id="editNorth" value="${item.dim_north || '-'}" style="background: var(--bg-tertiary); border: 1px solid var(--border-color); color: #fff; padding: 6px; border-radius: 6px; font-size: 11px; outline: none;">
+                    <label style="font-size: 11px; color: var(--text-secondary);">North Boundary</label>
+                    <input type="text" id="editNorth" value="${item.dim_north || '-'}" style="background: var(--bg-tertiary); border: 1px solid var(--border-color); color: #fff; padding: 6px 10px; border-radius: 6px; font-size: 12px; outline: none;">
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-size: 10px; color: var(--text-secondary);">South Bound</label>
-                    <input type="text" id="editSouth" value="${item.dim_south || '-'}" style="background: var(--bg-tertiary); border: 1px solid var(--border-color); color: #fff; padding: 6px; border-radius: 6px; font-size: 11px; outline: none;">
+                    <label style="font-size: 11px; color: var(--text-secondary);">South Boundary</label>
+                    <input type="text" id="editSouth" value="${item.dim_south || '-'}" style="background: var(--bg-tertiary); border: 1px solid var(--border-color); color: #fff; padding: 6px 10px; border-radius: 6px; font-size: 12px; outline: none;">
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-size: 10px; color: var(--text-secondary);">East Bound</label>
-                    <input type="text" id="editEast" value="${item.dim_east || '-'}" style="background: var(--bg-tertiary); border: 1px solid var(--border-color); color: #fff; padding: 6px; border-radius: 6px; font-size: 11px; outline: none;">
+                    <label style="font-size: 11px; color: var(--text-secondary);">East Boundary</label>
+                    <input type="text" id="editEast" value="${item.dim_east || '-'}" style="background: var(--bg-tertiary); border: 1px solid var(--border-color); color: #fff; padding: 6px 10px; border-radius: 6px; font-size: 12px; outline: none;">
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-size: 10px; color: var(--text-secondary);">West Bound</label>
-                    <input type="text" id="editWest" value="${item.dim_west || '-'}" style="background: var(--bg-tertiary); border: 1px solid var(--border-color); color: #fff; padding: 6px; border-radius: 6px; font-size: 11px; outline: none;">
+                    <label style="font-size: 11px; color: var(--text-secondary);">West Boundary</label>
+                    <input type="text" id="editWest" value="${item.dim_west || '-'}" style="background: var(--bg-tertiary); border: 1px solid var(--border-color); color: #fff; padding: 6px 10px; border-radius: 6px; font-size: 12px; outline: none;">
                 </div>
             </div>
             
             <div style="display: flex; flex-direction: column; gap: 4px;">
-                <label style="font-size: 10px; font-weight: 600; color: var(--text-secondary);">Customer Name</label>
-                <input type="text" id="editCustomer" value="${item.customer_name || ''}" style="background: var(--bg-tertiary); border: 1px solid var(--border-color); color: #fff; padding: 6px; border-radius: 6px; font-size: 12px; outline: none;" placeholder="Full name">
+                <label style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">Customer Name</label>
+                <input type="text" id="editCustomer" value="${item.customer_name || ''}" style="background: var(--bg-tertiary); border: 1px solid var(--border-color); color: #fff; padding: 8px 10px; border-radius: 6px; font-size: 13px; outline: none;" placeholder="Full name">
             </div>
             
             <div style="display: flex; flex-direction: column; gap: 4px;">
-                <label style="font-size: 10px; font-weight: 600; color: var(--text-secondary);">Reference / Share</label>
-                <input type="text" id="editReference" value="${item.reference_name || ''}" style="background: var(--bg-tertiary); border: 1px solid var(--border-color); color: #fff; padding: 6px; border-radius: 6px; font-size: 12px; outline: none;" placeholder="Developer / Land Owner">
+                <label style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">Reference / Share</label>
+                <input type="text" id="editReference" value="${item.reference_name || ''}" style="background: var(--bg-tertiary); border: 1px solid var(--border-color); color: #fff; padding: 8px 10px; border-radius: 6px; font-size: 13px; outline: none;" placeholder="Developer / Land Owner">
             </div>
             
-            <button id="savePlotEditBtn" class="action-btn-sm" style="background: var(--status-available); color: #fff; border: none; font-weight: 700; width: 100%; margin-top: 6px; padding: 10px; border-radius: 6px;">
+            <button id="savePlotEditBtn" class="admin-login-btn" style="background: var(--status-available); color: #fff; border: none; font-weight: 700; width: 100%; margin-top: 10px; padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
                 <i class="fa-solid fa-save"></i> Save Changes
             </button>
         </div>
