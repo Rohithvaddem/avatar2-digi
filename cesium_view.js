@@ -69,14 +69,21 @@ function initCesiumViewer() {
         return;
     }
 
-    // Initialize Cesium Viewer
+    // Disable Cesium Ion token requirement
+    Cesium.Ion.defaultAccessToken = '';
+
+    // Initialize Cesium Viewer with open ESRI Satellite Imagery
     viewer = new Cesium.Viewer('cesiumContainer', {
+        imageryProvider: new Cesium.UrlTemplateImageryProvider({
+            url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            credit: 'Esri World Imagery'
+        }),
         animation: false,
         timeline: false,
         geocoder: false,
         homeButton: true,
         sceneModePicker: true,
-        baseLayerPicker: true,
+        baseLayerPicker: false,
         navigationHelpButton: false,
         fullscreenButton: false,
         selectionIndicator: true,
