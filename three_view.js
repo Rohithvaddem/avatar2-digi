@@ -39,7 +39,8 @@ function setup3DControls() {
             toggle3dBtn.innerHTML = '<i class="fa-solid fa-map"></i>';
 
             // Hide 2D map & show 3D canvas
-            mapContainer.style.display = 'none';
+            mapContainer.style.opacity = '0';
+            mapContainer.style.pointerEvents = 'none';
             threeContainer.style.display = 'block';
             if (mapTip) {
                 mapTip.innerHTML = '<i class="fa-solid fa-arrows-spin"></i> Left-Click + Drag to Rotate &bull; Right-Click + Drag to Pan &bull; Scroll to Zoom';
@@ -61,7 +62,8 @@ function setup3DControls() {
 
             // Hide 3D canvas & show 2D map
             threeContainer.style.display = 'none';
-            mapContainer.style.display = 'block';
+            mapContainer.style.opacity = '1';
+            mapContainer.style.pointerEvents = 'auto';
             if (mapTip) {
                 mapTip.innerHTML = '<i class="fa-solid fa-hand-pointer"></i> Drag to Pan &bull; Scroll or Pinch to Zoom';
             }
@@ -139,8 +141,14 @@ function initThreeScene() {
 
     // 6. Textured Ground Plane (using mapImage from DOM to bypass CORS and local file:// restrictions)
     const mapImage = document.getElementById('mapImage');
-    const texture = new THREE.Texture(mapImage);
+    const texture = new THREE.Texture();
+    texture.image = mapImage;
     texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.generateMipmaps = false;
+    texture.wrapS = THREE.ClampToEdgeWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
     texture.flipY = true;
     texture.needsUpdate = true; // Signals Three.js to upload DOM pixels to GPU immediately
 
