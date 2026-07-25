@@ -9,7 +9,7 @@ let isCesiumActive = false;
 
 // Project Site GIS Bounds (Karkalpahad Aspirealty Avatar 2 location: 16.92328 N, 78.53235 E)
 const siteBounds = {
-    west: 78.53120,
+    west: 78.53100,
     south: 16.92050,
     east: 78.53380,
     north: 16.92620
@@ -103,10 +103,10 @@ function initCesiumViewer() {
     const centerLat = (siteBounds.south + siteBounds.north) / 2;
 
     viewer.camera.flyTo({
-        destination: Cesium.Cartesian3.fromDegrees(centerLng, centerLat - 0.003, 620),
+        destination: Cesium.Cartesian3.fromDegrees(centerLng, centerLat - 0.0025, 550),
         orientation: {
             heading: Cesium.Math.toRadians(0),
-            pitch: Cesium.Math.toRadians(-48),
+            pitch: Cesium.Math.toRadians(-45),
             roll: 0.0
         }
     });
@@ -116,33 +116,41 @@ function initCesiumViewer() {
         console.warn('Cesium render event suppressed:', error);
     });
 
-    // Add Ground Layout Overlay Image (Mapped to exact site location matching your image)
-    const rectangle = Cesium.Rectangle.fromDegrees(
+    // ----------------------------------------------------
+    // NATIVE SINGLE TILE IMAGERY OVERLAY (map_layout.jpg)
+    // Overlays layout drawing directly on satellite globe!
+    // ----------------------------------------------------
+    const layoutRectangle = Cesium.Rectangle.fromDegrees(
         siteBounds.west,
         siteBounds.south,
         siteBounds.east,
         siteBounds.north
     );
 
-    fetch('map_layout.jpg')
-        .then(res => res.blob())
-        .then(blob => {
-            const objectUrl = URL.createObjectURL(blob);
-            viewer.entities.add({
-                name: "Avatar 2 Project Masterplan Layout",
-                rectangle: {
-                    coordinates: rectangle,
-                    material: new Cesium.ImageMaterialProperty({
-                        image: objectUrl,
-                        transparent: true,
-                        alpha: 0.90
-                    })
-                }
-            });
-        })
-        .catch((err) => {
-            console.warn('Layout image fetch skipped:', err);
+    try {
+        const layoutProvider = new Cesium.SingleTileImageryProvider({
+            url: 'map_layout.jpg',
+            rectangle: layoutRectangle
         });
+        const layoutLayer = viewer.imageryLayers.addImageryProvider(layoutProvider);
+        layoutLayer.alpha = 0.95;
+    } catch (err) {
+        console.warn('SingleTileImageryProvider fallback:', err);
+    }
+
+    // Ground Rectangle Entity Fallback
+    viewer.entities.add({
+        name: "Avatar 2 Masterplan Image",
+        rectangle: {
+            coordinates: layoutRectangle,
+            material: new Cesium.ImageMaterialProperty({
+                image: 'map_layout.jpg',
+                transparent: true,
+                alpha: 0.95
+            }),
+            height: 0
+        }
+    });
 
     // Generate Interactive 3D Plot Tiles
     generateCesiumPlots();
