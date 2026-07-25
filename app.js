@@ -305,19 +305,9 @@ function updateMapTransform() {
 }
 
 function fitMapToViewport() {
-    const vWidth = mapViewport.clientWidth;
-    const vHeight = mapViewport.clientHeight;
-    
-    // Fit to exact display boundaries (1024x646)
-    const scaleX = vWidth / 1024;
-    const scaleY = vHeight / 646;
-    
-    zoomScale = Math.min(scaleX, scaleY);
-    
-    // Centering calculations
-    panX = (vWidth - 1024 * zoomScale) / 2;
-    panY = (vHeight - 646 * zoomScale) / 2;
-    
+    zoomScale = 1.02051;
+    panX = -9;
+    panY = -33.124;
     updateMapTransform();
 }
 
