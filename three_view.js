@@ -139,22 +139,10 @@ function initThreeScene() {
     fillLight.position.set(-30, 20, -30);
     scene.add(fillLight);
 
-    // 6. Textured Ground Plane (using mapImage from DOM to bypass CORS and local file:// restrictions)
-    const mapImage = document.getElementById('mapImage');
-    const texture = new THREE.Texture();
-    texture.image = mapImage;
-    texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-    texture.minFilter = THREE.LinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-    texture.generateMipmaps = false;
-    texture.wrapS = THREE.ClampToEdgeWrapping;
-    texture.wrapT = THREE.ClampToEdgeWrapping;
-    texture.flipY = true;
-    texture.needsUpdate = true; // Signals Three.js to upload DOM pixels to GPU immediately
-
+    // 6. Textured Ground Plane (using THREE.TextureLoader with anonymous CORS mapping to prevent WebGL black texture taint errors)
     const groundGeo = new THREE.PlaneGeometry(102.4, 64.6);
     const groundMat = new THREE.MeshStandardMaterial({
-        map: texture,
+        color: 0xf3f4f6, // Clean light-grey fallback background
         roughness: 0.9,
         metalness: 0.05,
         side: THREE.DoubleSide
@@ -171,10 +159,45 @@ function initThreeScene() {
     generateStreetlights();
     generateEntranceArch();
 
-    // Start rendering loop immediately so the scene loads instantly!
+    // Start rendering loop immediately
     startRendering();
 
+    // Load texture asynchronously
+    const textureLoader = new THREE.TextureLoader();
+    if (window.location.protocol !== 'file:') {
+        textureLoader.setCrossOrigin('anonymous');
+    }
+    textureLoader.load('map_layout.jpg', (texture) => {
+        texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.generateMipmaps = false;
+        texture.wrapS = THREE.ClampToEdgeWrapping;
+        texture.wrapT = THREE.ClampToEdgeWrapping;
+        texture.flipY = true;
+        
+        // Apply material with texture
+        ground.material = new THREE.MeshStandardMaterial({
+            map: texture,
+            roughness: 0.9,
+            metalness: 0.05,
+            side: THREE.DoubleSide
+        });
+    }, undefined, (err) => {
+        console.error("Error loading map texture asynchronously:", err);
+    });
+
     window.addEventListener('resize', onWindowResize);
+}
+
+// Helper to map status variables to hexadecimal color strings for WebGL/Three.js parsing
+function getThreeStatusColor(status) {
+    const s = String(status).toUpperCase().trim();
+    if (s === 'AVAILABLE') return '#10b981'; // Emerald Green
+    if (s === 'SOLD' || s === 'BOOKED' || s === 'CLUB HOUSE') return '#ef4444'; // Red
+    if (s === 'HOLD') return '#eab308'; // Gold
+    if (s === 'MORTGAGE') return '#f97316'; // Orange
+    return '#6b7280'; // Default gray
 }
 
 // ----------------------------------------------------
@@ -200,7 +223,7 @@ function generatePlotMeshes() {
         // Retrieve dynamic status color
         const plotDetail = plotData.find(p => String(p.plot_no) === String(plotNo));
         const status = plotDetail ? plotDetail.plot_status : 'AVAILABLE';
-        const color = window.getStatusColor ? window.getStatusColor(status) : '#10b981';
+        const color = getThreeStatusColor(status);
 
         // Glass-like translucent material
         const plotMat = new THREE.MeshPhongMaterial({
