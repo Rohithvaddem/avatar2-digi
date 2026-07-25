@@ -138,32 +138,36 @@ function initThreeScene() {
     scene.add(fillLight);
 
     // 6. Textured Ground Plane (using map_layout.jpg)
+    const groundGeo = new THREE.PlaneGeometry(102.4, 64.6);
+    const groundMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.9,
+        metalness: 0.05,
+        side: THREE.DoubleSide
+    });
+
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    // Generate elements immediately
+    generatePlotMeshes();
+    generateProceduralForest();
+    generateStreetlights();
+    generateEntranceArch();
+
+    // Start rendering loop immediately so the scene loads instantly!
+    startRendering();
+
+    // Load texture asynchronously and apply it once loaded
     const textureLoader = new THREE.TextureLoader();
     textureLoader.load('map_layout.jpg', (texture) => {
         texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-        
-        // Ground Size matches 1024x646 scale (factor of 0.1)
-        const groundGeo = new THREE.PlaneGeometry(102.4, 64.6);
-        const groundMat = new THREE.MeshStandardMaterial({
-            map: texture,
-            roughness: 0.9,
-            metalness: 0.05,
-            side: THREE.DoubleSide
-        });
-
-        const ground = new THREE.Mesh(groundGeo, groundMat);
-        ground.rotation.x = -Math.PI / 2;
-        ground.receiveShadow = true;
-        scene.add(ground);
-
-        // Generate elements once ground is loaded
-        generatePlotMeshes();
-        generateProceduralForest();
-        generateStreetlights();
-        generateEntranceArch();
-
-        // Start animating
-        startRendering();
+        groundMat.map = texture;
+        groundMat.needsUpdate = true;
+    }, undefined, (err) => {
+        console.error("Error loading map texture asynchronously:", err);
     });
 
     window.addEventListener('resize', onWindowResize);
