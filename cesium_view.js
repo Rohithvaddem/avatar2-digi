@@ -140,22 +140,8 @@ function initCesiumViewer() {
                 }
             });
         })
-        .catch(() => {
-            // Fallback using Cesium Resource with explicit anonymous crossOrigin
-            viewer.entities.add({
-                name: "Avatar 2 Project Layout Drawing",
-                rectangle: {
-                    coordinates: rectangle,
-                    material: new Cesium.ImageMaterialProperty({
-                        image: new Cesium.Resource({
-                            url: 'map_layout.jpg',
-                            crossOrigin: 'anonymous'
-                        }),
-                        transparent: true,
-                        alpha: 0.85
-                    })
-                }
-            });
+        .catch((err) => {
+            console.warn('Map layout image fetch skipped:', err);
         });
 
     // Add Plot Entities

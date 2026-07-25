@@ -942,3 +942,12 @@ body {
     display: none !important;
 }
 
+.cesium-widget-errorPanel,
+.cesium-viewer-errorPanel,
+.cesium-error-panel {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
