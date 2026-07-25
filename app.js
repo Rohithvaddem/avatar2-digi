@@ -153,8 +153,8 @@ function renderPlotDots() {
         dot.style.setProperty('--plot-color', getStatusColor(status));
         
         // Mapped coordinates at exactly 1024x646 display size
-        dot.style.left = `${coords.left - 7.5}px`;
-        dot.style.top = `${coords.top - 7.5}px`;
+        dot.style.left = `${coords.left - 12}px`;
+        dot.style.top = `${coords.top - 12}px`;
         
         dot.textContent = plotNo;
         

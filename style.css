@@ -519,14 +519,14 @@ body {
 /* Plot dots styling */
 .plot-dot {
     position: absolute;
-    width: 15px;
-    height: 15px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: var(--font-heading);
-    font-size: 7px;
+    font-size: 10px;
     font-weight: 700;
     color: #ffffff;
     cursor: pointer;
