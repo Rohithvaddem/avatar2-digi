@@ -1,6 +1,6 @@
 /* 
    ====================================================
-   Avatar 2 Digital Layout CSS
+   Avatar 2 Digital Layout - Immersive Floating Design
    ====================================================
 */
 
@@ -10,11 +10,11 @@
     --bg-primary: #050814;
     --bg-secondary: #0d1224;
     --bg-tertiary: #131932;
-    --bg-glass: rgba(13, 18, 36, 0.75);
+    --bg-glass: rgba(10, 15, 30, 0.85);
     
-    --accent: #0f62fe;
-    --accent-hover: #0043ce;
-    --accent-glow: rgba(15, 98, 254, 0.35);
+    --accent: #3b82f6;
+    --accent-hover: #1d4ed8;
+    --accent-glow: rgba(59, 130, 246, 0.4);
     
     --text-primary: #f4f6fa;
     --text-secondary: #8e9bb4;
@@ -42,121 +42,110 @@ body {
     overflow: hidden;
     height: 100vh;
     width: 100vw;
-    display: flex;
-    flex-direction: column;
 }
 
-/* Layout Wrapper */
+/* App Wrapper */
 .app-container {
-    display: flex;
-    height: 100vh;
-    width: 100vw;
     position: relative;
-}
-
-/* Sidebar Styling */
-.sidebar {
-    width: 320px;
-    background-color: var(--bg-secondary);
-    border-right: 1px solid var(--border-color);
+    width: 100vw;
+    height: 100vh;
     display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 100;
 }
 
-.sidebar-header {
-    padding: 24px;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.brand-logo {
-    width: 32px;
-    height: 32px;
+/* Full-Screen Map Viewport */
+.map-viewport {
+    flex: 1;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    background-color: #03050a;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--accent), #00c6ff);
+    cursor: grab;
+}
+
+.map-viewport:active {
+    cursor: grabbing;
+}
+
+/* Immersive Floating Panels Base */
+.floating-panel {
+    position: absolute;
+    background: var(--bg-glass);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    padding: 16px;
+    z-index: 100;
+    pointer-events: auto; /* Capture click events */
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+    animation: fade-in-panel 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fade-in-panel {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 1. Brand & Search Panel (Top Left) */
+.search-panel {
+    top: 20px;
+    left: 20px;
+    width: 320px;
+}
+
+.brand-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.brand-logo {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--accent), #10b981);
     border-radius: 8px;
     color: #fff;
-    font-size: 16px;
-    box-shadow: 0 4px 12px var(--accent-glow);
+    font-size: 14px;
+    box-shadow: 0 4px 10px var(--accent-glow);
 }
 
 .brand-name {
     font-family: var(--font-heading);
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 800;
+    letter-spacing: 0.5px;
     background: linear-gradient(to right, #ffffff, var(--text-secondary));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
-.sidebar-close {
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    font-size: 20px;
-    cursor: pointer;
-    display: none;
-}
-
-.sidebar-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-}
-
-/* Sidebar sections */
-.sidebar-section {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.section-title {
-    font-family: var(--font-heading);
-    font-size: 13px;
+.approved-badge {
+    margin-left: auto;
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--status-available);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    font-size: 9px;
     font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--text-secondary);
 }
 
-.filter-reset-btn {
-    background: none;
-    border: none;
-    color: var(--accent);
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: opacity 0.2s;
-}
-
-.filter-reset-btn:hover {
-    opacity: 0.8;
-}
-
-/* Search Box */
+/* Search Box inside Panel */
 .search-container {
     position: relative;
     width: 100%;
@@ -173,23 +162,24 @@ body {
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-secondary);
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .search-input {
     width: 100%;
-    background-color: var(--bg-tertiary);
+    background-color: rgba(255, 255, 255, 0.04);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    padding: 10px 36px 10px 36px;
+    padding: 10px 32px 10px 34px;
     color: var(--text-primary);
     font-size: 13px;
     outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: all 0.25s ease;
 }
 
 .search-input:focus {
     border-color: var(--accent);
+    background-color: rgba(255, 255, 255, 0.08);
     box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
@@ -206,22 +196,17 @@ body {
     display: none;
 }
 
-.search-clear-btn:hover {
-    color: var(--text-primary);
-}
-
-/* Suggestions dropdown */
 .search-suggestions {
     position: absolute;
     top: calc(100% + 6px);
     left: 0;
     width: 100%;
-    background: var(--bg-secondary);
+    background: #0d1122;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
     z-index: 1000;
-    max-height: 200px;
+    max-height: 220px;
     overflow-y: auto;
     display: none;
 }
@@ -236,10 +221,6 @@ body {
     border-bottom: 1px solid rgba(255, 255, 255, 0.02);
 }
 
-.suggestion-item:last-child {
-    border-bottom: none;
-}
-
 .suggestion-item:hover {
     background-color: var(--bg-tertiary);
 }
@@ -247,6 +228,7 @@ body {
 .suggestion-no {
     font-weight: 700;
     color: var(--accent);
+    font-size: 13px;
 }
 
 .suggestion-desc {
@@ -254,42 +236,52 @@ body {
     color: var(--text-secondary);
 }
 
-/* Filter Pill Grid */
-.filter-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+/* 2. Filters & Legends Panel (Bottom Left) */
+.filter-legend-panel {
+    bottom: 20px;
+    left: 20px;
+    width: 320px;
 }
 
-.filter-pill {
-    background-color: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
-    color: var(--text-secondary);
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.2s ease;
-}
-
-.filter-pill:hover {
-    border-color: rgba(255, 255, 255, 0.2);
-    color: var(--text-primary);
-}
-
-.filter-pill.active {
-    background-color: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-    box-shadow: 0 2px 8px var(--accent-glow);
-}
-
-/* Legend items */
-.status-legend-list {
+.panel-section {
     display: flex;
     flex-direction: column;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.section-title {
+    font-family: var(--font-heading);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-secondary);
+}
+
+.filter-reset-btn {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.filter-reset-btn:hover {
+    opacity: 0.8;
+}
+
+/* Grid layout for Legends */
+.legend-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 8px;
 }
 
@@ -297,32 +289,34 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 12px;
-    background-color: var(--bg-tertiary);
+    padding: 8px 10px;
+    background-color: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    font-size: 12px;
+    font-size: 11px;
     cursor: pointer;
-    transition: border-color 0.2s;
+    transition: all 0.2s;
 }
 
 .legend-item:hover {
     border-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.06);
 }
 
 .legend-item.active {
     border-color: var(--legend-color);
+    box-shadow: 0 0 8px var(--legend-color);
 }
 
 .legend-label-group {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 6px;
 }
 
 .legend-color-dot {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background-color: var(--legend-color);
 }
@@ -337,167 +331,85 @@ body {
 }
 
 .legend-count {
-    font-family: var(--font-heading);
     font-weight: 700;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 2px 8px;
-    border-radius: 20px;
+    font-family: var(--font-heading);
+    opacity: 0.8;
 }
 
-/* Sidebar Footer & Login button */
-.sidebar-footer {
-    padding: 20px;
-    border-top: 1px solid var(--border-color);
+/* Facing Filter pills Grid */
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
 }
 
-.admin-login-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
+.filter-pill {
     background-color: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
     color: var(--text-secondary);
-    padding: 10px;
-    font-size: 13px;
+    padding: 6px 0;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.filter-pill:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    color: var(--text-primary);
+}
+
+.filter-pill.active {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+/* 3. Coordinate Mapper Panel (Admin Panel) */
+.admin-panel {
+    top: 20px;
+    left: 360px;
+    width: 240px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.action-btn-sm {
+    background-color: rgba(255,255,255,0.03);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 11px;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
-}
-
-.admin-login-btn:hover {
-    background-color: rgba(255, 255, 255, 0.08);
-    color: var(--text-primary);
-    border-color: rgba(255, 255, 255, 0.15);
-}
-
-/* Main Area Content */
-.main-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    position: relative;
-}
-
-/* Header */
-.dashboard-header {
-    height: 70px;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 24px;
-    background-color: var(--bg-secondary);
-    z-index: 10;
-}
-
-.sidebar-toggle {
-    background: none;
-    border: none;
-    color: var(--text-primary);
-    font-size: 20px;
-    cursor: pointer;
-    display: none;
-}
-
-.header-project-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.project-name {
-    font-family: var(--font-heading);
-    font-size: 20px;
-    font-weight: 800;
-}
-
-.badge {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-}
-
-.approved-badge {
-    background: rgba(16, 185, 129, 0.15);
-    color: var(--status-available);
-    border: 1px solid rgba(16, 185, 129, 0.2);
-}
-
-.header-stats {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-}
-
-.stat-header-item {
-    text-align: right;
-}
-
-.stat-header-label {
-    font-size: 10px;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.stat-header-val {
-    font-family: var(--font-heading);
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
-/* Map Viewport Area */
-.map-viewport {
-    flex: 1;
-    overflow: hidden;
-    position: relative;
-    background-color: #05060d;
-    cursor: grab;
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 6px;
 }
 
-.map-viewport:active {
-    cursor: grabbing;
+.action-btn-sm:hover {
+    background-color: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
 }
 
-/* Drag instructions */
-.map-tip {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(13, 18, 36, 0.85);
-    border: 1px solid var(--border-color);
-    padding: 8px 16px;
-    border-radius: 30px;
-    font-size: 11px;
-    color: var(--text-secondary);
-    pointer-events: none;
-    z-index: 20;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(8px);
-}
-
-/* Map Container Dimensions set specifically to 1024x646 */
+/* 4. Map Container (1024x646) */
 .map-container {
     position: relative;
     width: 1024px;
     height: 646px;
     transform-origin: 0 0;
     user-select: none;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 25px 75px rgba(0, 0, 0, 0.9);
     background-color: #0b0c10;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .map-image {
@@ -516,7 +428,7 @@ body {
     pointer-events: none;
 }
 
-/* Plot dots styling */
+/* Plot dots styling (Increased size to match physical layout drawing) */
 .plot-dot {
     position: absolute;
     width: 24px;
@@ -531,16 +443,16 @@ body {
     color: #ffffff;
     cursor: pointer;
     pointer-events: auto;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
     background-color: var(--plot-color);
     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s, opacity 0.3s;
 }
 
 .plot-dot:hover {
-    transform: scale(1.3);
+    transform: scale(1.35);
     z-index: 10;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6), 0 0 10px var(--plot-color);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.6), 0 0 12px var(--plot-color);
 }
 
 .plot-dot.filtered-out {
@@ -550,10 +462,10 @@ body {
 
 /* Highlighting searched plot */
 .plot-dot.highlighted {
-    transform: scale(1.4);
+    transform: scale(1.45);
     z-index: 30;
     border-color: #ffffff;
-    box-shadow: 0 0 24px var(--plot-color), 0 0 0 6px rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 25px var(--plot-color), 0 0 0 6px rgba(255, 255, 255, 0.4);
     animation: pulse-glow 1.2s infinite alternate;
 }
 
@@ -566,58 +478,37 @@ body {
     }
 }
 
-/* Floating Map Controls */
-.map-controls {
+/* Instructions Tip */
+.map-tip {
     position: absolute;
     bottom: 25px;
-    right: 25px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    z-index: 90;
-}
-
-.map-control-btn {
-    width: 48px;
-    height: 48px;
-    background-color: rgba(13, 20, 38, 0.9);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    color: var(--text-primary);
-    font-size: 18px;
-    cursor: pointer;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(10, 15, 30, 0.85);
+    border: 1px solid var(--border-color);
+    padding: 8px 18px;
+    border-radius: 30px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    pointer-events: none;
+    z-index: 20;
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 8px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-    transition: all 0.2s ease;
+    backdrop-filter: blur(8px);
 }
 
-.map-control-btn:hover {
-    background-color: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-    box-shadow: 0 0 10px var(--accent-glow);
-    transform: translateY(-2px);
-}
-
-.map-control-btn:active {
-    transform: translateY(0);
-}
-
-/* Custom Animated Details Modal */
+/* 5. Floating Detail Card (Top Right) */
 #modalBackdrop {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: transparent; /* Transparent so map is visible and interactive */
-    backdrop-filter: none;
+    background-color: transparent;
     z-index: 150;
-    pointer-events: none; /* Let click actions pass through to map overlay */
+    pointer-events: none; /* Clicks pass through to map */
     opacity: 0;
     transition: opacity 0.3s ease;
 }
@@ -628,21 +519,26 @@ body {
 
 #plotModal {
     position: absolute;
-    top: 100px; /* Below the top header */
-    right: 75px; /* Shifted left by request so it sits over the layout map */
+    top: 20px;
+    right: 20px;
     width: 240px;
-    max-width: calc(100% - 50px);
-    background-color: rgba(13, 20, 38, 0.94);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    max-width: calc(100% - 40px);
+    background-color: rgba(10, 15, 30, 0.94);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 12px;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
-    pointer-events: auto; /* Active cursor for inputs/buttons inside card */
-    transform: translateX(100px);
+    pointer-events: auto;
+    transform: translateX(50px);
     opacity: 0;
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+
+#modalBackdrop.show #plotModal {
+    transform: translateX(0);
+    opacity: 1;
 }
 
 #plotModal .modal-header {
@@ -675,20 +571,57 @@ body {
     font-size: 10px;
 }
 
-#modalBackdrop.show #plotModal {
-    transform: translateX(0);
-    opacity: 1;
+/* Floating Controls (Bottom Right) */
+.map-controls {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 90;
+    pointer-events: auto;
 }
 
-/* Staff Login Centered Modal Styling */
+.map-control-btn {
+    width: 48px;
+    height: 48px;
+    background-color: var(--bg-glass);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    transition: all 0.2s ease;
+}
+
+.map-control-btn:hover {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 10px var(--accent-glow);
+    transform: translateY(-2px);
+}
+
+.map-control-btn:active {
+    transform: translateY(0);
+}
+
+/* Staff Login Centered Modal */
 #loginModalBackdrop {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(5, 7, 10, 0.75);
-    backdrop-filter: blur(4px);
+    background-color: rgba(3, 5, 10, 0.8);
+    backdrop-filter: blur(6px);
     z-index: 2000;
     display: flex;
     align-items: center;
@@ -706,11 +639,11 @@ body {
 #loginModal {
     width: 90%;
     max-width: 380px;
-    background-color: var(--bg-glass);
+    background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: 16px;
     padding: 24px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7);
     transform: scale(0.9) translateY(20px);
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -724,22 +657,21 @@ body {
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid var(--border-color);
-    padding-bottom: 16px;
-    margin-bottom: 20px;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
 }
 
 .modal-title {
     font-family: var(--font-heading);
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
-    letter-spacing: 0.5px;
 }
 
 .modal-close {
     background: none;
     border: none;
     color: var(--text-secondary);
-    font-size: 20px;
+    font-size: 18px;
     cursor: pointer;
     transition: color 0.2s;
 }
@@ -752,14 +684,14 @@ body {
 .detail-card {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
 }
 
 .detail-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 10px;
+    padding-bottom: 8px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 
@@ -769,81 +701,73 @@ body {
 }
 
 .detail-label {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--text-secondary);
     font-weight: 500;
 }
 
 .detail-val {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--text-primary);
     text-align: right;
 }
 
 .status-badge {
-    padding: 6px 12px;
+    padding: 4px 10px;
     border-radius: 20px;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     color: #fff;
-    box-shadow: 0 0 10px var(--badge-glow);
+    box-shadow: 0 0 8px var(--badge-glow);
     background-color: var(--badge-color);
 }
 
-/* Responsive Overrides */
-@media (max-width: 992px) {
-    .sidebar {
-        position: fixed;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        transform: translateX(-100%);
+/* Responsive Viewports */
+@media (max-width: 768px) {
+    .search-panel {
+        top: 15px;
+        left: 15px;
+        right: 15px;
+        width: auto;
     }
     
-    .sidebar.show {
-        transform: translateX(0);
+    .filter-legend-panel {
+        bottom: 85px;
+        left: 15px;
+        right: 15px;
+        width: auto;
+        transform: translateY(120%);
+        opacity: 0;
+        pointer-events: none;
     }
     
-    .sidebar-close {
-        display: block;
+    /* When active on mobile, filters panel slides up */
+    .filter-legend-panel.show-mobile {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+        z-index: 120;
     }
-    
-    .sidebar-toggle {
-        display: block;
-    }
-    
-    .header-stats {
-        display: none;
-    }
-}
 
-@media (max-width: 576px) {
-    .dashboard-header {
-        padding: 0 16px;
-    }
-    
-    .project-name {
-        font-size: 18px;
-    }
-    
-    .custom-modal {
-        padding: 20px;
-    }
-    
-    /* Responsive Bottom Drawer for Plot Modal on Mobile */
     #plotModal {
         top: auto;
-        bottom: 20px;
-        right: 15px;
+        bottom: 85px;
         left: 15px;
+        right: 15px;
         width: auto;
         max-width: none;
-        transform: translateY(120px);
-        box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.6);
+        transform: translateY(150px);
     }
     
     #modalBackdrop.show #plotModal {
         transform: translateY(0);
+    }
+    
+    .admin-panel {
+        top: 80px;
+        left: 15px;
+        right: 15px;
+        width: auto;
     }
 }
