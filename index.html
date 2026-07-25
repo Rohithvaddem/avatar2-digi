@@ -7,6 +7,9 @@
     <!-- CSS and Icon Libraries -->
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- CesiumJS WebGIS 3D Globe Library -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cesium/1.95.0/Widgets/widgets.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cesium/1.95.0/Cesium.js"></script>
 </head>
 <body>
     <!-- Nice & Minimal Loading Screen -->
@@ -139,55 +142,15 @@
                     <button class="map-control-btn" id="zoomInBtn" title="Zoom In"><i class="fa-solid fa-plus"></i></button>
                     <button class="map-control-btn" id="zoomOutBtn" title="Zoom Out"><i class="fa-solid fa-minus"></i></button>
                     <button class="map-control-btn" id="recenterBtn" title="Recenter Map"><i class="fa-solid fa-arrows-to-dot"></i></button>
-                    <button class="map-control-btn" id="toggleRouteBtn" title="Show Routing"><i class="fa-solid fa-route"></i></button>
+                    <button class="map-control-btn" id="toggleCesiumBtn" title="Toggle Cesium 3D Globe"><i class="fa-solid fa-earth-americas"></i></button>
                 </div>
 
-                <!-- Floating Routing Control Panel -->
-                <div id="routingPanel" class="routing-panel">
-                    <div class="routing-panel-header">
-                        <span><i class="fa-solid fa-route"></i> Nearby Routing</span>
-                        <button class="close-routing-btn" id="closeRoutingPanelBtn"><i class="fa-solid fa-xmark"></i></button>
-                    </div>
-                    <div class="routing-panel-body">
-                        <div class="routing-input-group">
-                            <label>Start Plot</label>
-                            <div class="routing-input-wrapper">
-                                <input type="text" id="routeSourcePlot" placeholder="Click any plot on map" readonly>
-                                <span class="routing-hint">(click on map)</span>
-                            </div>
-                        </div>
-                        <div class="routing-input-group">
-                            <label>Destination Landmark</label>
-                            <select id="routeDestination">
-                                <option value="school" data-dist="850m" data-time="2 mins">🏫 Govt Primary School (850m)</option>
-                                <option value="bank" data-dist="1.2 km" data-time="3 mins">🏦 State Bank of India (1.2 km)</option>
-                                <option value="hospital" data-dist="2.0 km" data-time="5 mins">🏥 KV General Hospital (2.0 km)</option>
-                                <option value="petrol" data-dist="1.5 km" data-time="4 mins">⛽ Nyara Petrol Pump (1.5 km)</option>
-                                <option value="bus" data-dist="2.8 km" data-time="7 mins">🚌 Yacharam Bus Station (2.8 km)</option>
-                            </select>
-                        </div>
-                        <div class="routing-metrics" id="routingMetrics" style="display: none;">
-                            <div class="metric-item">
-                                <span class="metric-label">Total Distance</span>
-                                <span class="metric-value" id="routeMetricDistance">-</span>
-                            </div>
-                            <div class="metric-item">
-                                <span class="metric-label">Driving Time</span>
-                                <span class="metric-value" id="routeMetricTime">-</span>
-                            </div>
-                        </div>
-                        <div class="routing-actions">
-                            <button class="routing-btn btn-secondary" id="clearRouteBtn">Clear</button>
-                            <button class="routing-btn btn-primary" id="calculateRouteBtn">Show Route</button>
-                        </div>
-                    </div>
-                </div>
+                <!-- CesiumJS 3D Viewport Overlay -->
+                <div id="cesiumContainer" style="display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 10;"></div>
 
                 <!-- Drag/Zoom Container (set to 1024x646) -->
                 <div class="map-container" id="mapContainer">
                     <img src="map_layout.jpg" alt="Aspirealty Avatar 2 Project Layout" class="map-image" id="mapImage">
-                    <!-- Route Path Overlay SVG -->
-                    <svg id="routeSvgOverlay" viewBox="0 0 1024 646" style="position: absolute; top:0; left:0; width:1024px; height:646px; pointer-events:none; z-index: 8;"></svg>
                     <!-- Dynamic overlay nodes go here -->
                     <div class="plots-overlay" id="plotsOverlay"></div>
                 </div>
@@ -240,5 +203,6 @@
     <script src="plot_coords.js"></script>
     <script src="data.js"></script>
     <script src="app.js"></script>
+    <script src="cesium_view.js"></script>
 </body>
 </html>
