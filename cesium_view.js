@@ -51,7 +51,19 @@ function setupCesiumControls() {
 
             if (!viewer) {
                 initCesiumViewer();
+            } else {
+                viewer.resize();
             }
+
+            // Force WebGL Canvas Viewport Resize after container display toggle
+            setTimeout(() => {
+                if (viewer) {
+                    viewer.resize();
+                    if (viewer.scene) {
+                        viewer.scene.requestRender();
+                    }
+                }
+            }, 100);
         } else {
             toggleBtn.classList.remove('active');
             toggleBtn.title = "View Cesium 3D Globe";
@@ -98,6 +110,9 @@ function initCesiumViewer() {
         infoBox: false
     });
 
+    // Ensure WebGL viewport resizes to full container dimensions
+    viewer.resize();
+
     // Camera fly to site location (Karkalpahad Aspirealty Avatar 2 footprint)
     const centerLng = (siteBounds.west + siteBounds.east) / 2;
     const centerLat = (siteBounds.south + siteBounds.north) / 2;
@@ -112,13 +127,14 @@ function initCesiumViewer() {
     });
 
     // Suppress render errors
-    viewer.scene.renderError.addEventListener((scene, error) => {
-        console.warn('Cesium render event suppressed:', error);
-    });
+    if (viewer.scene && viewer.scene.renderError) {
+        viewer.scene.renderError.addEventListener((scene, error) => {
+            console.warn('Cesium render event suppressed:', error);
+        });
+    }
 
     // ----------------------------------------------------
-    // NATIVE SINGLE TILE IMAGERY OVERLAY (map_layout.jpg)
-    // Overlays layout drawing directly on satellite globe!
+    // Layout Ground Overlay via CORS HTMLImageElement
     // ----------------------------------------------------
     const layoutRectangle = Cesium.Rectangle.fromDegrees(
         siteBounds.west,
@@ -127,30 +143,27 @@ function initCesiumViewer() {
         siteBounds.north
     );
 
-    try {
-        const layoutProvider = new Cesium.SingleTileImageryProvider({
-            url: 'map_layout.jpg',
-            rectangle: layoutRectangle
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function () {
+        if (!viewer) return;
+        viewer.entities.add({
+            name: "Avatar 2 Masterplan Overlay",
+            rectangle: {
+                coordinates: layoutRectangle,
+                material: new Cesium.ImageMaterialProperty({
+                    image: img,
+                    transparent: true,
+                    alpha: 0.95
+                }),
+                height: 0
+            }
         });
-        const layoutLayer = viewer.imageryLayers.addImageryProvider(layoutProvider);
-        layoutLayer.alpha = 0.95;
-    } catch (err) {
-        console.warn('SingleTileImageryProvider fallback:', err);
-    }
-
-    // Ground Rectangle Entity Fallback
-    viewer.entities.add({
-        name: "Avatar 2 Masterplan Image",
-        rectangle: {
-            coordinates: layoutRectangle,
-            material: new Cesium.ImageMaterialProperty({
-                image: 'map_layout.jpg',
-                transparent: true,
-                alpha: 0.95
-            }),
-            height: 0
-        }
-    });
+    };
+    img.onerror = function () {
+        console.warn('Layout image failed to load via CORS image element.');
+    };
+    img.src = 'map_layout.jpg';
 
     // Generate Interactive 3D Plot Tiles
     generateCesiumPlots();
